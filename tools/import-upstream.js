@@ -197,6 +197,7 @@ write(path.join(dataOut, 'AchievementsForeverData_Forever.toc'), `## Interface: 
 ## Category-enUS: Libraries
 
 AchievementsForeverData_Classic.lua
+AchievementsForeverData_ForeverMaps.lua
 AchievementsIconAssets.lua
 `);
 

@@ -34,7 +34,7 @@ First login checklist:
 8. `/reload`, then check the window again. Completions must survive the reload.
 9. Send `WTF\Account\<account>\SavedVariables\AchievementsForeverCharacterDB.lua` from the character's folder under `WTF\Account\<account>\<realm>\<character>\SavedVariables\` and the account-wide `AchievementsForeverDB.lua`.
 
-Commands: `/af` opens the window, `/af stats` the statistics, `/af native` lists which achievement API functions Blizzard provides natively, `/af-debug` toggles verbose output, `/af-clear` wipes the character's progress, `/af-compare <name>`, `/af-title`, `/af-fetch`. The modern client also has `/eventtrace` for watching events live and `/dump <expression>` for inspecting values.
+Commands: `/af` opens the window, `/af stats` the statistics, `/af native` lists which achievement API functions Blizzard provides natively, `/af emote` shows whether the emote hook or the chat fallback fired (`/af emote test` records a `/love` against the current target directly), `/af explore` prints what the client reports as explored for the current map and whether the data has matching rows, `/af-debug` toggles verbose output, `/af-clear` wipes the character's progress, `/af-compare <name>`, `/af-title`, `/af-fetch`. The modern client also has `/eventtrace` for watching events live and `/dump <expression>` for inspecting values.
 
 Known at this stage: the micro-button integration is disabled on purpose, the window opens from `/af` or the key binding only. Statistics come from the addon's own counters for now; wiring Blizzard's native statistics in is the next step.
 

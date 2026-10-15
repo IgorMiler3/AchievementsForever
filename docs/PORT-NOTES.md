@@ -64,6 +64,16 @@ The bundled UI (`Vanilla/Blizzard_AchievementUI`) is Wrath-era interface code. I
 4. Native rendering of `achievement:` links.
 5. Presence of about 120 API functions and 10 textures.
 
+## Found during in-game testing (15 Oct 2026, build 1.60.1.70374)
+
+- Registering `COMBAT_LOG_EVENT_UNFILTERED` is itself a protected call on Forever (`ADDON_ACTION_FORBIDDEN`) and the event never fires. The addon no longer registers it; kills come from `UNIT_DIED`.
+- The 200-local limit of Lua 5.1 counts the enclosing chunk's locals, so a `do ... end` block does not help in `AchievementsCriteriaResolvers.lua` (199 chunk locals upstream). Every Forever addition in that file hangs off the `Resolvers` table.
+- The modern `PanelTemplates_TabResize` reads `tab.Left/.Middle/.Right` (plus `Disabled`, `Active`, `Highlight` and `Text`) instead of looking the textures up by name. The bundled tab template sets those keys in `OnLoad`.
+- Function values stored in tables (`categoryAccessor = GetCategoryList`) escaped the call-site rewrite and handed the window Blizzard's native category list, whose IDs (15626 and friends) do not exist in our data. The port script now rewrites bare references too.
+- Forever's chat code does not reach the global `DoEmote` that upstream hooks. The player's own text emote (`You love Rabbit.`) is parsed from `CHAT_MSG_TEXT_EMOTE` as a fallback (English verbs only). `/af emote` shows which path fires.
+- Forever re-cut every zone map. Its 60 `UiMap` rows each use a new `UiMapArt` and new `WorldMapOverlay` rows (1081 rows, of which 559 are new), so the Wrath overlay geometry never matches what `C_MapExplorationInfo.GetExploredMapTextures` reports. `tools/gen-forever-maps.js` downloads Forever's `WorldMapOverlay`, `UiMapXMapArt`, `UiMap` and `AreaTable` from wago.tools (products `wowf` and `wow_cn_beta`, the latter at the beta build) and writes `AchievementsForeverData_ForeverMaps.lua`, which merges the Forever rows into the data and lists, for each Wrath overlay, the Forever overlays that reveal the same area. 494 of 501 old rows bridge that way. Seven areas have no Forever overlay at all; four of them are exploration criteria that currently cannot complete: Undercity (Tirisfal Glades), Dragonmaw Gates (Wetlands), Blackmaw Hold (Ashenvale) and Cenarion Hold (Silithus). `/af explore` prints what the client reports for the current map.
+- wago.tools also serves Forever's own `Achievement` (436 rows), `Criteria`, `CriteriaTree`, `ModifierTree` and `Achievement_Category` tables. Forever's exploration criteria still point at the old overlay rows, so its tables are not a drop-in replacement for the Wrath data, but they are the source for Forever-only content when the data generator is written.
+
 ## Open design items after the port
 
 - Per-character storage: upstream keeps completions per character and reserves the account-wide store for account-flagged achievements and remote snapshots. For this project everything moves to the per-character store.

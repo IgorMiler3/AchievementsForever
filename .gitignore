@@ -7,3 +7,4 @@ Thumbs.db
 WTF/
 *.lua.bak
 package-lock.json
+tools/.cache/

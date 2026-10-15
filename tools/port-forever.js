@@ -230,6 +230,37 @@ function Resolvers.MergeExploredOverlaysForMap(exploredOverlays, uiMapID, overla
   console.log('exploration geometry fallback added');
 }
 
+// ------------------------------------------------------------------ 5a2. exploration: accept the Forever overlay that reveals the same area
+resolvers = read(resolversPath);
+if (!resolvers.includes('data.worldMapOverlayEquivalents')) {
+  const exploredOld = '\tif not exploredWorldMapOverlayCache then\n\t\treturn nil;\n\tend\n\n\treturn exploredWorldMapOverlayCache[overlayID] == true;\nend';
+  if (!resolvers.includes(exploredOld)) throw new Error('IsWorldMapOverlayExplored block not found');
+  resolvers = resolvers.replace(exploredOld, `\tif not exploredWorldMapOverlayCache then
+		return nil;
+	end
+
+	if exploredWorldMapOverlayCache[overlayID] == true then
+		return true;
+	end
+
+	-- AchievementsForever: Forever re-cut its zone maps, so the Wrath overlay
+	-- a criterion points at never appears in the client's explored list. The
+	-- generated maps data lists the Forever overlays that reveal the same area.
+	local equivalents = data.worldMapOverlayEquivalents and data.worldMapOverlayEquivalents[overlayID];
+	if equivalents then
+		for _, otherID in ipairs(equivalents) do
+			if exploredWorldMapOverlayCache[otherID] == true then
+				return true;
+			end
+		end
+	end
+
+	return false;
+end`);
+  write(resolversPath, resolvers);
+  console.log('exploration overlay equivalents added');
+}
+
 // ------------------------------------------------------------------ 5b. instrument the DoEmote hook so the fallback can defer to it
 resolvers = read(resolversPath);
 if (!resolvers.includes('Resolvers.emoteHookInstalled')) {

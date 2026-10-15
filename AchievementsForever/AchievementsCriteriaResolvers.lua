@@ -1079,7 +1079,23 @@ local function IsWorldMapOverlayExplored(overlayID)
 		return nil;
 	end
 
-	return exploredWorldMapOverlayCache[overlayID] == true;
+	if exploredWorldMapOverlayCache[overlayID] == true then
+		return true;
+	end
+
+	-- AchievementsForever: Forever re-cut its zone maps, so the Wrath overlay
+	-- a criterion points at never appears in the client's explored list. The
+	-- generated maps data lists the Forever overlays that reveal the same area.
+	local equivalents = data.worldMapOverlayEquivalents and data.worldMapOverlayEquivalents[overlayID];
+	if equivalents then
+		for _, otherID in ipairs(equivalents) do
+			if exploredWorldMapOverlayCache[otherID] == true then
+				return true;
+			end
+		end
+	end
+
+	return false;
 end
 
 local function IsKnownSpell(spellID)

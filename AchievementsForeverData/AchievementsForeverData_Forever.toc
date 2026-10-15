@@ -10,4 +10,5 @@
 ## Category-enUS: Libraries
 
 AchievementsForeverData_Classic.lua
+AchievementsForeverData_ForeverMaps.lua
 AchievementsIconAssets.lua

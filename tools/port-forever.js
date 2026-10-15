@@ -190,6 +190,20 @@ if (!bootstrap.includes(PORT_MARK)) {
   console.log('bootstrap events guarded, UNIT_DIED dispatched');
 }
 
+// ------------------------------------------------------------------ 4. micro-button code paths called directly (not via the namespace)
+const microPath = path.join(runtime, 'AchievementsMicroButton.lua');
+let micro = read(microPath);
+if (!micro.includes('Never touch it.')) {
+  micro = micro.replace('local function EnsureAchievementMicroButton()\n\tif AchievementMicroButton then',
+    'local function EnsureAchievementMicroButton()\n\t-- AchievementsForever: Forever\'s native AchievementMicroButton belongs to\n\t-- Blizzard\'s Legacy window and sits in a protected menu. Never touch it.\n\tdo return nil; end\n\tif AchievementMicroButton then');
+  micro = micro.replace('local function HookUpdateMicroButtons()\n\tif updateMicroButtonsHooked or not UpdateMicroButtons then',
+    'local function HookUpdateMicroButtons()\n\tdo return; end -- AchievementsForever: see EnsureAchievementMicroButton\n\tif updateMicroButtonsHooked or not UpdateMicroButtons then');
+  micro = micro.replace(/\r\n/g, '\n');
+  if (!micro.includes('Never touch it.')) throw new Error('micro-button patch failed');
+  write(microPath, micro);
+  console.log('micro-button paths neutralised');
+}
+
 // ------------------------------------------------------------------ slash commands
 let slashHits = 0;
 for (const file of listLua(runtime)) {

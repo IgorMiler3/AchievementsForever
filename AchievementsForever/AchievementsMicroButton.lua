@@ -319,6 +319,9 @@ local function LayoutLegacyAchievementMicroButton(button)
 end
 
 local function EnsureAchievementMicroButton()
+	-- AchievementsForever: Forever's native AchievementMicroButton belongs to
+	-- Blizzard's Legacy window and sits in a protected menu. Never touch it.
+	do return nil; end
 	if AchievementMicroButton then
 		if IsInCombatLockdown() then
 			return AchievementMicroButton;
@@ -354,6 +357,7 @@ local function EnsureAchievementMicroButton()
 end
 
 local function HookUpdateMicroButtons()
+	do return; end -- AchievementsForever: see EnsureAchievementMicroButton
 	if updateMicroButtonsHooked or not UpdateMicroButtons then
 		return;
 	end

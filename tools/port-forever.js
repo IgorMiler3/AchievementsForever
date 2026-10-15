@@ -707,6 +707,31 @@ SlashCmdList["ACHIEVEMENTSFOREVERTOGGLE"] = function(argument)
 			local recorded = Achievements.RecordEmoteCriteria("LOVE");
 			print(prefix .. "direct LOVE test against target " .. tostring(UnitName("target")) .. ": recorded = " .. tostring(recorded));
 		end
+	elseif argument == "explore all" then
+		-- Does the client report explored pieces for maps other than the current one?
+		local byArt = (_G.AchievementsForeverData and _G.AchievementsForeverData.foreverUiMapByArtID) or {};
+		local reported, empty = {}, 0;
+		for _, uiMapID in pairs(byArt) do
+			local ok, textures = pcall(function() return C_MapExplorationInfo.GetExploredMapTextures(uiMapID); end);
+			local count = (ok and textures and #textures) or 0;
+			if count > 0 then
+				local info = C_Map.GetMapInfo and C_Map.GetMapInfo(uiMapID);
+				tinsert(reported, tostring(info and info.name or uiMapID) .. "=" .. count);
+			else
+				empty = empty + 1;
+			end
+		end
+		table.sort(reported);
+		print(prefix .. "maps with explored pieces: " .. #reported .. ", maps reporting none: " .. empty);
+		print(prefix .. table.concat(reported, ", "));
+	elseif argument == "explore rescan" then
+		if Achievements.ClearExplorationCache then
+			Achievements.ClearExplorationCache();
+		end
+		if Achievements.RefreshCriteriaAchievements then
+			Achievements.RefreshCriteriaAchievements(true);
+		end
+		print(prefix .. "exploration cache cleared and criteria refreshed; check the Exploration category again");
 	elseif argument == "explore" then
 		local uiMapID = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player");
 		local artID = uiMapID and C_Map.GetMapArtID and C_Map.GetMapArtID(uiMapID);

@@ -56,7 +56,7 @@ FEAT_OF_STRENGTH_ID = 81;
 -- Vanilla and TBC do not ship playable versions of the achievement menu sound
 -- kits. Bundle the original Blizzard sounds just like the earned sound instead
 -- of relying on SoundKit IDs 13832/13833, which return an empty result here.
-local ACHIEVEMENT_ADDON_NAME = Achievements and Achievements.addonName or "Achievements";
+local ACHIEVEMENT_ADDON_NAME = AchievementsForever and AchievementsForever.addonName or "AchievementsForever";
 local ACHIEVEMENT_MENU_OPEN_SOUND_FILE = "Interface\\AddOns\\" .. tostring(ACHIEVEMENT_ADDON_NAME) .. "\\Media\\AchievementMenuOpen.ogg";
 local ACHIEVEMENT_MENU_CLOSE_SOUND_FILE = "Interface\\AddOns\\" .. tostring(ACHIEVEMENT_ADDON_NAME) .. "\\Media\\AchievementMenuClose.ogg";
 
@@ -113,7 +113,7 @@ ACHIEVEMENTFRAME_SUBFRAMES = {
 function AchievementsFrameCategories_OnEvent (self, event, ...)
 	if ( event == "ADDON_LOADED" ) then
 		local addonName = ...;
-		if ( addonName and addonName ~= "Achievements" ) then
+		if ( addonName and addonName ~= "AchievementsForever" ) then
 			return;
 		end
 		

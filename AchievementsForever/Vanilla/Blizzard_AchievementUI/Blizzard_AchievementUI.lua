@@ -1188,8 +1188,8 @@ function AchievementsFrameSummary_Update(isCompare)
 	-- Refresh the suggested-achievements pool so empty slots in the Recent
 	-- Achievements panel are filled with relevant incomplete achievements
 	-- rather than placeholder defaults.
-	if Achievements and Achievements.GetSuggestedAchievements then
-		ACHIEVEMENTUI_DEFAULTSUMMARYACHIEVEMENTS = Achievements.GetSuggestedAchievements();
+	if AchievementsForever and AchievementsForever.GetSuggestedAchievements then
+		ACHIEVEMENTUI_DEFAULTSUMMARYACHIEVEMENTS = AchievementsForever.GetSuggestedAchievements();
 	end
 	AchievementsFrameSummary_UpdateAchievements(AchievementsForever.GetLatestCompletedAchievements());
 end

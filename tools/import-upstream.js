@@ -87,8 +87,13 @@ const RENAMES = [
   [/rawget\(_G,\s*"Achievements"\)/g, 'rawget(_G, "AchievementsForever")'],
   // addon-message prefix so upstream clients never talk to us
   [/"ACHV"/g, '"ACHVFOREVER"'],
-  // ADDON_LOADED comparisons against the folder name
+  // ADDON_LOADED comparisons against the folder name, both forms
   [/==\s*"Achievements"/g, '== "AchievementsForever"'],
+  [/~=\s*"Achievements"/g, '~= "AchievementsForever"'],
+  // the bundled UI files have no local alias and reference the namespace global
+  // directly: `Achievements and Achievements.addonName or "Achievements"`
+  [/\bAchievements(?=\s+and\s|\.addonName|\.GetSuggestedAchievements)/g, 'AchievementsForever'],
+  [/or\s+"Achievements";/g, 'or "AchievementsForever";'],
   // media and asset paths
   [/AddOns(\\+)AchievementsData(\\+)/g, 'AddOns$1AchievementsForeverData$2'],
   [/AddOns(\\+)Achievements(\\+)/g, 'AddOns$1AchievementsForever$2'],

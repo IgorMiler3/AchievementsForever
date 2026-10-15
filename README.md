@@ -31,7 +31,7 @@ After updating the files, type `/reload` in game.
 ## Using it
 
 - `/af` opens the achievement window, `/af stats` the statistics tab. A key binding is available under Options, Key Bindings, AddOns.
-- The search box in the top-right corner of the window finds achievements by name. Click a result, or press Enter for the first one, to jump to it.
+- The search box at the bottom of the category column finds achievements by name. Click a result, or press Enter for the first one, to jump to it.
 - Shift-click an achievement with the chat box open to link it. Links from other players who run the addon open the window at that achievement.
 - `/af-title` lists and sets earned titles, `/af-compare <name>` compares with another player running the addon.
 - Achievements earned by guild members running the addon are announced in guild chat colour.

@@ -5,7 +5,7 @@
 First build tested in game on the Forever beta (1.60.1.70374).
 
 - Window: category list, achievement list, summary, statistics tab, filter and tabs work on the Forever client. Fixed the native category list leaking into the window, the tab texture keys the modern tab code expects, and the 200-local limit in the criteria resolvers.
-- Search box in the window header with a results list; Enter jumps to the first result.
+- Search box at the bottom of the category column with a results list; Enter jumps to the first result.
 - Header reads "Achievement Points" (progress is per character).
 - Every global the bundled window defines carries the `AF_` prefix, so Blizzard's Legacy window can load without breaking ours. The warning about it loading is gone.
 - Emotes: the player's own text emotes are read from chat because Forever's chat code does not reach the global emote hook.

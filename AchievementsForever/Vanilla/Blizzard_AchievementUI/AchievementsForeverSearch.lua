@@ -183,12 +183,14 @@ local function OnSearchTextChanged(self)
 end
 
 local function CreateSearchUI()
-	searchBox = CreateFrame("EditBox", "AchievementsFrameSearchBox", AchievementsFrame, "SearchBoxTemplate");
-	searchBox:SetSize(170, 20);
-	-- The filter dropdown sits at TOPRIGHT (-98, 10) and is 118 wide, but it is
-	-- hidden on the summary page, so anchor to the window itself and leave room.
-	searchBox:SetPoint("TOPRIGHT", AchievementsFrame, "TOPRIGHT", -226, 10);
-	searchBox:SetFrameLevel(AchievementsFrameFilterDropdown:GetFrameLevel() + 1);
+	-- The header row has no free space (the points plaque is centred and the
+	-- filter dropdown takes the right end), so the box lives at the bottom of
+	-- the category column, in the empty parchment area, on every tab.
+	local column = AchievementsFrameCategories or AchievementsFrame;
+	searchBox = CreateFrame("EditBox", "AchievementsFrameSearchBox", column, "SearchBoxTemplate");
+	searchBox:SetSize(math.max(120, (column:GetWidth() or 175) - 22), 20);
+	searchBox:SetPoint("BOTTOMLEFT", column, "BOTTOMLEFT", 14, 10);
+	searchBox:SetFrameLevel(column:GetFrameLevel() + 5);
 	searchBox:SetAutoFocus(false);
 	-- opaque background behind the template's translucent border art
 	local bg = searchBox:CreateTexture(nil, "BACKGROUND", nil, -1);
@@ -213,7 +215,8 @@ local function CreateSearchUI()
 
 	resultsFrame = CreateFrame("Frame", "AchievementsFrameSearchResults", AchievementsFrame, "TooltipBackdropTemplate");
 	resultsFrame:SetSize(RESULTS_WIDTH, 100);
-	resultsFrame:SetPoint("TOPRIGHT", searchBox, "BOTTOMRIGHT", 0, -4);
+	-- pops out to the right of the box, over the achievement list, growing upward
+	resultsFrame:SetPoint("BOTTOMLEFT", searchBox, "BOTTOMRIGHT", 12, -6);
 	resultsFrame:SetFrameStrata("DIALOG");
 	resultsFrame:EnableMouse(true);
 	resultsFrame:Hide();
@@ -228,17 +231,11 @@ local function CreateSearchUI()
 		searchIndex = nil;
 	end);
 
-	-- The box belongs to the achievements tab only.
-	local function ShowBox() searchBox:Show(); end
-	local function HideBox() searchBox:Hide(); HideResults(); end
-	for _, frame in ipairs({ AchievementsFrameSummary, AchievementsFrameAchievements }) do
+	-- The box stays on every tab; only the open results list is dropped when
+	-- the page changes.
+	for _, frame in ipairs({ AchievementsFrameSummary, AchievementsFrameAchievements, AchievementsFrameStats, AchievementsFrameComparison }) do
 		if frame then
-			frame:HookScript("OnShow", ShowBox);
-		end
-	end
-	for _, frame in ipairs({ AchievementsFrameStats, AchievementsFrameComparison }) do
-		if frame then
-			frame:HookScript("OnShow", HideBox);
+			frame:HookScript("OnShow", HideResults);
 		end
 	end
 end

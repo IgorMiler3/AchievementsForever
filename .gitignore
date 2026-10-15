@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.zip
+.DS_Store
+Thumbs.db
+# WoW saved variables that testers may drop in for inspection
+WTF/
+*.lua.bak

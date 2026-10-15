@@ -1,0 +1,33 @@
+## Interface: 16001
+## Title: Achievements Forever
+## Notes: Retail-style achievements for World of Warcraft: Forever. Fork of Achievements by Deathwing (GPL-3.0).
+## IconTexture: Interface\AddOns\AchievementsForever\Media\logo.png
+## Author: Achievements Forever contributors
+## Version: 0.1.0
+## X-License: GNU GPL3
+## X-Upstream: https://github.com/Deathwing/Achievements
+## X-Category: Achievements
+## Category-enUS: Collections
+## Dependencies: AchievementsForeverData
+## SavedVariables: AchievementsForeverDB
+## SavedVariablesPerCharacter: AchievementsForeverCharacterDB
+
+Achievements.lua
+AchievementsCriteriaResolvers.lua
+AchievementsCriteria.lua
+AchievementsMicroButton.lua
+AchievementsChatLinks.lua
+AchievementsGuildBroadcast.lua
+AchievementsTitles.lua
+AchievementsUpdate.lua
+AchievementsNetwork.lua
+AchievementsCompare.lua
+AchievementsFetcher.lua
+AchievementsWatchFrame.lua
+AchievementsBootstrap.lua
+AchievementsAPI.lua
+
+Vanilla\Blizzard_AchievementUI\Blizzard_AchievementUI.lua
+Vanilla\Blizzard_AchievementUI\Blizzard_AchievementUI_Shared.lua
+Vanilla\Blizzard_AchievementUI\Blizzard_AchievementUI.xml
+Vanilla\Blizzard_AchievementUI\Localization.lua

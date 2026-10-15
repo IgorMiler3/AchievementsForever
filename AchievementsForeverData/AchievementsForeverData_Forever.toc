@@ -1,0 +1,13 @@
+## Interface: 16001
+## Title: Achievements Forever Data
+## Notes: Generated achievement data for Achievements Forever. Source: 3.4.5.63697 CSV via the upstream Achievements project (GPL-3.0).
+## IconTexture: Interface\AddOns\AchievementsForeverData\Media\logo.png
+## Author: Achievements Forever contributors
+## Version: 0.1.0
+## X-License: GNU GPL3
+## X-Upstream: https://github.com/Deathwing/Achievements
+## X-Category: Library
+## Category-enUS: Libraries
+
+AchievementsForeverData_Classic.lua
+AchievementsIconAssets.lua

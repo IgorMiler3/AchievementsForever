@@ -1,0 +1,8 @@
+<Bindings>
+	<Binding name="AF_TOGGLEACHIEVEMENT" header="ACHIEVEMENTSFOREVER" category="ADDONS">
+		AchievementsForever.ToggleAchievementFrame(false)
+	</Binding>
+	<Binding name="AF_TOGGLESTATISTICS" category="ADDONS">
+		AchievementsForever.ToggleAchievementFrame(true)
+	</Binding>
+</Bindings>

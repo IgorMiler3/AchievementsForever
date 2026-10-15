@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: Achievements Forever Probe
+## Notes: Phase 0 probe. Answers what the Forever client exposes before the real addon is ported. Type /afprobe.
+## Author: Achievements Forever contributors
+## Version: 0.1.0
+## X-License: GNU GPL3
+## SavedVariables: AchievementsForeverProbeDB
+
+Probe.lua

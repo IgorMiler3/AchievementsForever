@@ -68,7 +68,14 @@ for (const file of files) {
   const before = text;
 
   if (base !== 'AchievementsAPI.lua') {
+    // A file that declares a local with an API global's name (upstream has
+    // `local function GetTrackedAchievements()` in Achievements.lua) must keep
+    // calling its own local, so skip those names in that file.
+    const localNames = new Set();
+    for (const m of text.matchAll(/^\s*local\s+function\s+(\w+)\s*\(/gm)) localNames.add(m[1]);
+    for (const m of text.matchAll(/^\s*local\s+(\w+)\s*=/gm)) localNames.add(m[1]);
     for (const name of API_GLOBALS) {
+      if (localNames.has(name)) continue;
       const re = new RegExp(`(^|[^\\w.:])${name}\\(`, 'gm');
       text = text.replace(re, (m, pre) => { apiHits++; return `${pre}AchievementsForever.${name}(`; });
     }
@@ -98,6 +105,7 @@ if (!resolvers.includes('HandleUnitDiedEvent')) {
 -- leaving it, is treated as a kill by the player's group. Kill criteria that
 -- need more than that (killing blows, player kills) stay on the native
 -- statistics instead.
+do -- scoped: this chunk is at Lua's 200-local limit
 local unitDiedLastCombatAt = 0;
 local unitDiedCombatFrame = CreateFrame("Frame");
 pcall(unitDiedCombatFrame.RegisterEvent, unitDiedCombatFrame, "PLAYER_REGEN_DISABLED");
@@ -156,6 +164,7 @@ local function HandleUnitDiedEvent(destGUID)
 	return recorded;
 end
 Achievements.HandleUnitDiedEvent = HandleUnitDiedEvent;
+end
 
 `;
   resolvers = resolvers.replace(anchor, killPath + anchor);

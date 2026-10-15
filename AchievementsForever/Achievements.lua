@@ -379,12 +379,12 @@ for achievementID, achievement in pairs(ACHIEVEMENT_DATA) do
 	end
 end
 
-local function AchievementsForever.GetTrackedAchievements()
+local function GetTrackedAchievements()
 	AchievementsForeverCharacterDB.tracked = AchievementsForeverCharacterDB.tracked or {};
 	return AchievementsForeverCharacterDB.tracked;
 end
 
-local trackedAchievements = AchievementsForever.GetTrackedAchievements();
+local trackedAchievements = GetTrackedAchievements();
 local comparisonUnit;
 local achievementUICache = {};
 

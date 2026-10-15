@@ -8170,6 +8170,7 @@ Achievements.RegisterQuestSortQuests = Resolvers.RegisterQuestSortQuests;
 -- leaving it, is treated as a kill by the player's group. Kill criteria that
 -- need more than that (killing blows, player kills) stay on the native
 -- statistics instead.
+do -- scoped: this chunk is at Lua's 200-local limit
 local unitDiedLastCombatAt = 0;
 local unitDiedCombatFrame = CreateFrame("Frame");
 pcall(unitDiedCombatFrame.RegisterEvent, unitDiedCombatFrame, "PLAYER_REGEN_DISABLED");
@@ -8228,6 +8229,7 @@ local function HandleUnitDiedEvent(destGUID)
 	return recorded;
 end
 Achievements.HandleUnitDiedEvent = HandleUnitDiedEvent;
+end
 
 Achievements.HandleCombatLogCriteria = HandleCombatLogCriteria;
 Achievements.RecordUsedItem = RecordUsedItemID;

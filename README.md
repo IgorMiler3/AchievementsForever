@@ -6,7 +6,7 @@ It is a fork of [Achievements](https://github.com/Deathwing/Achievements) by Dea
 
 ## Status
 
-Phase 0, the probe. Nothing is playable yet. See [docs/TESTING.md](docs/TESTING.md) for what to install and what to report.
+Phase 1, first playable build. The runtime and the bundled window are ported to the Forever client and untested in game as of 15 October 2026. See [docs/TESTING.md](docs/TESTING.md) for what to install and what to report, and [docs/PROBE-RESULTS.md](docs/PROBE-RESULTS.md) for what the client exposes.
 
 ## What is in the repository
 

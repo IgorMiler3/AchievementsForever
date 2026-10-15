@@ -7,3 +7,4 @@
 - Guarded every global achievement API definition so the Forever client's native functions are never overwritten.
 - Wrote Forever TOC files (Interface 16001).
 - Added the phase 0 probe addon.
+- Ported the runtime and the bundled window: achievement API calls routed through the addon namespace, removed Classic globals shimmed in AchievementsForeverCompat.lua, kills detected from UNIT_DIED, micro-button integration disabled, slash commands moved to /af.

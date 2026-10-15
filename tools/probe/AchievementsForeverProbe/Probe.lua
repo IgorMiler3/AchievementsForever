@@ -402,7 +402,9 @@ frame:SetScript("OnEvent", function(_, event, ...)
 	end
 
 	local entry = logEvent(event, ...)
-	if event == "ENCOUNTER_START" or event == "ENCOUNTER_END" or event == "BOSS_KILL" or event == "ACHIEVEMENT_EARNED" or event == "UNIT_DIED" then
+	-- Everything is written to the saved file. Chat echo is opt-in
+	-- (/afprobe verbose) because UNIT_DIED fires for every death nearby.
+	if db.verbose and (event == "ENCOUNTER_START" or event == "ENCOUNTER_END" or event == "BOSS_KILL" or event == "ACHIEVEMENT_EARNED" or event == "UNIT_DIED") then
 		print_(entry)
 	end
 end)
@@ -467,6 +469,9 @@ SlashCmdList["AFPROBE"] = function(argument)
 		end
 	elseif argument == "link" then
 		postTestLink()
+	elseif argument == "verbose" then
+		db.verbose = not db.verbose
+		print_("chat echo of encounter and death events " .. (db.verbose and "on" or "off"))
 	elseif argument == "events" then
 		local events = db.events or {}
 		for i = math.max(1, #events - 40), #events do

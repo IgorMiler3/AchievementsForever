@@ -513,9 +513,9 @@ local function PatchedAchievementButton_UpdatePlusMinusTexture(button)
 	end
 
 	local display = false;
-	if ( GetAchievementNumCriteria(id) ~= 0 ) then
+	if ( AchievementsForever.GetAchievementNumCriteria(id) ~= 0 ) then
 		display = true;
-	elseif ( GetPreviousAchievement(id) and button.completed ) then
+	elseif ( AchievementsForever.GetPreviousAchievement(id) and button.completed ) then
 		display = true;
 	end
 
@@ -570,7 +570,7 @@ local function PatchedAchievementFrameCategories_GetCategoryList(categories)
 	local topLevelCategories = {};
 	local childrenByParent = {};
 	for i, id in ipairs(cats) do
-		local _, parent = GetCategoryInfo(id);
+		local _, parent = AchievementsForever.GetCategoryInfo(id);
 		if ( parent == -1 ) then
 			tinsert(topLevelCategories, id);
 		else
@@ -637,9 +637,9 @@ local function AddCachedStatisticRow(rows, statisticID, quantity)
 end
 
 local function AddCachedStatisticRows(rows, categoryID)
-	local numStats = GetCategoryNumAchievements(categoryID) or 0;
+	local numStats = AchievementsForever.GetCategoryNumAchievements(categoryID) or 0;
 	for index = 1, numStats do
-		local quantity, skip, statisticID = GetStatistic(categoryID, index);
+		local quantity, skip, statisticID = AchievementsForever.GetStatistic(categoryID, index);
 		if ( not skip and statisticID ) then
 			AddCachedStatisticRow(rows, statisticID, quantity);
 		end
@@ -787,11 +787,11 @@ local function AddComparisonStatisticRow(rows, statisticID, quantity, friendQuan
 end
 
 local function AddComparisonStatisticRows(rows, categoryID)
-	local numStats = GetCategoryNumAchievements(categoryID) or 0;
+	local numStats = AchievementsForever.GetCategoryNumAchievements(categoryID) or 0;
 	for statIndex = 1, numStats do
-		local quantity, skip, statisticID = GetStatistic(categoryID, statIndex);
+		local quantity, skip, statisticID = AchievementsForever.GetStatistic(categoryID, statIndex);
 		if ( not skip and statisticID ) then
-			local friendQuantity = GetComparisonStatistic(statisticID);
+			local friendQuantity = AchievementsForever.GetComparisonStatistic(statisticID);
 			AddComparisonStatisticRow(rows, statisticID, quantity, friendQuantity);
 		end
 	end
@@ -1014,7 +1014,7 @@ local function ApplyAchievementSummaryStatisticSelectionPatch()
 end
 
 local function DisplaySummaryAchievement(button, achievementID, incompleteTooltip)
-	local id, name, points, completed, month, day, year, description, flags, icon = GetAchievementInfo(achievementID);
+	local id, name, points, completed, month, day, year, description, flags, icon = AchievementsForever.GetAchievementInfo(achievementID);
 	if not id then
 		return false;
 	end
@@ -1099,7 +1099,7 @@ local function PatchedAchievementFrameSummary_Update(isCompare)
 	if Achievements.GetSuggestedAchievements then
 		ACHIEVEMENTUI_DEFAULTSUMMARYACHIEVEMENTS = Achievements.GetSuggestedAchievements();
 	end
-	AchievementsFrameSummary_UpdateAchievements(GetLatestCompletedAchievements());
+	AchievementsFrameSummary_UpdateAchievements(AchievementsForever.GetLatestCompletedAchievements());
 end
 
 local function ApplyAchievementSummaryUIPatch()
@@ -1212,7 +1212,7 @@ function Achievements.AchievementMicroButton_Update()
 
 	-- On clients with a native achievement micro button (TBC), the secure
 	-- UpdateMicroButtons() disables the button when the NATIVE achievement list
-	-- is empty (native HasCompletedAnyAchievement()/CanShowAchievementUI() are
+	-- is empty (native AchievementsForever.HasCompletedAnyAchievement()/AchievementsForever.CanShowAchievementUI() are
 	-- authoritative there since 1.0.6), leaving it faded at 0.5 alpha and
 	-- unclickable. The addon supplies its own achievements, so re-enable it.
 	if button.IsEnabled and button.Enable and not button:IsEnabled() then

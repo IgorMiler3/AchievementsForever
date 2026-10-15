@@ -156,7 +156,7 @@ function AchievementsFrameCategories_GetCategoryList (categories)
 	tinsert(categories, { ["id"] = "summary" });
 
 	for i, id in next, cats do
-		local _, parent = GetCategoryInfo(id);
+		local _, parent = AchievementsForever.GetCategoryInfo(id);
 		if ( parent == -1 ) then
 			tinsert(categories, { ["id"] = id });
 		end
@@ -164,7 +164,7 @@ function AchievementsFrameCategories_GetCategoryList (categories)
 	
 	local _, parent;
 	for i = #cats, 1, -1 do 
-		_, parent = GetCategoryInfo(cats[i]);
+		_, parent = AchievementsForever.GetCategoryInfo(cats[i]);
 		for j, category in next, categories do
 			if ( category.id == parent ) then
 				category.parent = true;
@@ -203,9 +203,9 @@ function AchievementsFrameCategories_DisplayButton (button, element)
 	-- kind of janky
 	if ( id == "summary" ) then
 		categoryName = ACHIEVEMENT_SUMMARY_CATEGORY;
-		numAchievements, numCompleted = GetNumCompletedAchievements();
+		numAchievements, numCompleted = AchievementsForever.GetNumCompletedAchievements();
 	else
-		categoryName, parentID, flags = GetCategoryInfo(id);
+		categoryName, parentID, flags = AchievementsForever.GetCategoryInfo(id);
 		numAchievements, numCompleted = AchievementFrame_GetCategoryTotalNumAchievements(id, true);
 	end
 	button.label:SetText(categoryName);
@@ -381,7 +381,7 @@ function AchievementsFrameAchievements_OnEvent (self, event, ...)
 		self:RegisterEvent("CRITERIA_UPDATE");
 		self:RegisterEvent("TRACKED_ACHIEVEMENT_LIST_CHANGED");
 		
-		AchievementFrame_UpdateTrackedAchievements(GetTrackedAchievements());
+		AchievementFrame_UpdateTrackedAchievements(AchievementsForever.GetTrackedAchievements());
 	elseif ( event == "ACHIEVEMENT_EARNED" ) then
 		if ( self:IsVisible()) then
 			local achievementID = ...;
@@ -393,7 +393,7 @@ function AchievementsFrameAchievements_OnEvent (self, event, ...)
 			if ( AchievementsFrameAchievementsContainer:IsShown() and selection == achievementID ) then
 				AchievementFrame_SelectAchievement(selection, true);
 			end
-			AchievementsFrameHeaderPoints:SetText(GetTotalAchievementPoints());
+			AchievementsFrameHeaderPoints:SetText(AchievementsForever.GetTotalAchievementPoints());
 		else
 			AchievementsFrameAchievements.criteriaDirty = true;
 			AchievementsFrameAchievementsObjectives.id = nil;
@@ -419,12 +419,12 @@ function AchievementsFrameAchievements_OnEvent (self, event, ...)
 			AchievementsFrame.trackedAchievements[k] = nil;
 		end
 		
-		AchievementFrame_UpdateTrackedAchievements(GetTrackedAchievements());
+		AchievementFrame_UpdateTrackedAchievements(AchievementsForever.GetTrackedAchievements());
 	end
 	
 	
 	if ( not AchievementMicroButton:IsShown() ) then
-		AchievementMicroButton_Update();
+		AchievementsForever.AchievementMicroButton_Update();
 	end
 end
 
@@ -538,9 +538,9 @@ function AchievementButton_UpdatePlusMinusTexture (button)
 	end
 
 	local display = false;
-	if ( GetAchievementNumCriteria(id) ~= 0 ) then
+	if ( AchievementsForever.GetAchievementNumCriteria(id) ~= 0 ) then
 		display = true;
-	elseif ( GetPreviousAchievement(id) and button.completed ) then
+	elseif ( AchievementsForever.GetPreviousAchievement(id) and button.completed ) then
 		display = true;
 	end
 	
@@ -661,7 +661,7 @@ end
 function AchievementButton_OnClick (self, ignoreModifiers)
 	if(IsModifiedClick() and not ignoreModifiers) then
 		if ( IsModifiedClick("CHATLINK") and ChatEdit_GetActiveWindow() ) then
-			local achievementLink = GetAchievementLink(self.id);
+			local achievementLink = AchievementsForever.GetAchievementLink(self.id);
 			if ( achievementLink ) then
 				ChatEdit_InsertLink(achievementLink);
 			end
@@ -693,26 +693,26 @@ end
 
 function AchievementButton_ToggleTracking (id)
 	if ( AchievementsFrame.trackedAchievements[id] ) then
-		RemoveTrackedAchievement(id);
+		AchievementsForever.RemoveTrackedAchievement(id);
 		AchievementsFrameAchievements_ForceUpdate();
 		WatchFrame_Update();
 		return;
 	end
 	
-	local count = GetNumTrackedAchievements();
+	local count = AchievementsForever.GetNumTrackedAchievements();
 	
 	if ( count >= MAX_TRACKED_ACHIEVEMENTS ) then
 		UIErrorsFrame:AddMessage(format(ACHIEVEMENT_WATCH_TOO_MANY, MAX_TRACKED_ACHIEVEMENTS), 1.0, 0.1, 0.1, 1.0);
 		return;
 	end
 	
-	local _, _, _, completed = GetAchievementInfo(id)
+	local _, _, _, completed = AchievementsForever.GetAchievementInfo(id)
 	if ( completed ) then
 		UIErrorsFrame:AddMessage(ERR_ACHIEVEMENT_WATCH_COMPLETED, 1.0, 0.1, 0.1, 1.0);
 		return;
 	end
 	
-	AddTrackedAchievement(id);
+	AchievementsForever.AddTrackedAchievement(id);
 	AchievementsFrameAchievements_ForceUpdate();
 	WatchFrame_Update();
 	
@@ -720,7 +720,7 @@ function AchievementButton_ToggleTracking (id)
 end
 	
 function AchievementButton_DisplayAchievement (button, category, achievement, selectionID)
-	local id, name, points, completed, month, day, year, description, flags, icon, rewardText = GetAchievementInfo(category, achievement);
+	local id, name, points, completed, month, day, year, description, flags, icon, rewardText = AchievementsForever.GetAchievementInfo(category, achievement);
 	if ( not id ) then
 		button:Hide();
 		return;
@@ -736,7 +736,7 @@ function AchievementButton_DisplayAchievement (button, category, achievement, se
 		button.label:SetWidth(ACHIEVEMENTBUTTON_LABELWIDTH);
 		button.label:SetText(name)
 	
-		if ( GetPreviousAchievement(id) ) then
+		if ( AchievementsForever.GetPreviousAchievement(id) ) then
 			-- If this is a progressive achievement, show the total score.
 			AchievementShield_SetPoints(AchievementButton_GetProgressivePoints(id), button.shield.points, AchievementPointsFont, AchievementPointsFontSmall);
 		else
@@ -779,7 +779,7 @@ function AchievementButton_DisplayAchievement (button, category, achievement, se
 			end
 		end		
 		
-		if ( IsTrackedAchievement(id) ) then
+		if ( AchievementsForever.IsTrackedAchievement(id) ) then
 			button.check:Show();
 			button.label:SetWidth(button.label:GetStringWidth() + 4); -- This +4 here is to fudge around any string width issues that arize from resizing a string set to its string width. See bug 144418 for an example.
 			button.tracked:SetChecked(true);
@@ -851,7 +851,7 @@ function AchievementButton_DisplayObjectives (button, id, completed)
 			objectives:SetPoint("TOP", "$parentHiddenDescription", "BOTTOM", 0, -8);
 			height = ACHIEVEMENTBUTTON_COLLAPSEDHEIGHT + objectives:GetHeight();
 		end
-	elseif ( completed and GetPreviousAchievement(id) ) then
+	elseif ( completed and AchievementsForever.GetPreviousAchievement(id) ) then
 		objectives:SetHeight(0);
 		AchievementButton_ResetCriteria();
 		AchievementButton_ResetProgressBars();
@@ -918,14 +918,14 @@ function AchievementObjectives_DisplayProgressiveAchievement (objectivesFrame, i
 	end
 	
 	tinsert(achievementList, 1, baseAchievementID);
-	while GetPreviousAchievement(baseAchievementID) do
-		tinsert(achievementList, 1, GetPreviousAchievement(baseAchievementID));
-		baseAchievementID = GetPreviousAchievement(baseAchievementID);
+	while AchievementsForever.GetPreviousAchievement(baseAchievementID) do
+		tinsert(achievementList, 1, AchievementsForever.GetPreviousAchievement(baseAchievementID));
+		baseAchievementID = AchievementsForever.GetPreviousAchievement(baseAchievementID);
 	end
 	
 	local i = 0;
 	for index, achievementID in ipairs(achievementList) do
-		local _, achievementName, points, completed, month, day, year, description, flags, iconpath = GetAchievementInfo(achievementID);
+		local _, achievementName, points, completed, month, day, year, description, flags, iconpath = AchievementsForever.GetAchievementInfo(achievementID);
 		flags = flags or 0;		-- bug 360115. grabbed from mainline to avoid future issues
 		local miniAchievement = AchievementButton_GetMiniAchievement(index);
 		
@@ -944,8 +944,8 @@ function AchievementObjectives_DisplayProgressiveAchievement (objectivesFrame, i
 		
 		miniAchievement.numCriteria = 0;
 		if ( bit.band(flags, ACHIEVEMENT_FLAGS_HAS_PROGRESS_BAR) ~= ACHIEVEMENT_FLAGS_HAS_PROGRESS_BAR ) then
-			for criteriaIndex = 1, GetAchievementNumCriteria(achievementID) do
-				local criteriaString, criteriaType, criteriaCompleted = GetAchievementCriteriaInfo(achievementID, criteriaIndex);
+			for criteriaIndex = 1, AchievementsForever.GetAchievementNumCriteria(achievementID) do
+				local criteriaString, criteriaType, criteriaCompleted = AchievementsForever.GetAchievementCriteriaInfo(achievementID, criteriaIndex);
 				if ( criteriaCompleted == false ) then
 					criteriaString = "|CFF808080 - " .. criteriaString;
 				else
@@ -974,7 +974,7 @@ function AchievementObjectives_DisplayCriteria (objectivesFrame, id)
 	end
 
 	local ACHIEVEMENTMODE_CRITERIA = 1;
-	local numCriteria = GetAchievementNumCriteria(id);
+	local numCriteria = AchievementsForever.GetAchievementNumCriteria(id);
 	
 	if ( numCriteria == 0 ) then
 		objectivesFrame.mode = ACHIEVEMENTMODE_CRITERIA;
@@ -991,7 +991,7 @@ function AchievementObjectives_DisplayCriteria (objectivesFrame, id)
 	local maxCriteriaWidth = 0;
 	local yPos;
 	for i = 1, numCriteria do	
-		local criteriaString, criteriaType, criteriaCompleted, quantity, reqQuantity, charName, criteriaFlags, assetID, quantityString = GetAchievementCriteriaInfo(id, i);
+		local criteriaString, criteriaType, criteriaCompleted, quantity, reqQuantity, charName, criteriaFlags, assetID, quantityString = AchievementsForever.GetAchievementCriteriaInfo(id, i);
 		
 		if ( criteriaType == CRITERIA_TYPE_ACHIEVEMENT and assetID ) then
 			metas = metas + 1;
@@ -1009,7 +1009,7 @@ function AchievementObjectives_DisplayCriteria (objectivesFrame, id)
 				numRows = numRows + 2;
 			end
 			
-			local achievementId, achievementName, points, completed, month, day, year, description, flags, iconpath = GetAchievementInfo(assetID);
+			local achievementId, achievementName, points, completed, month, day, year, description, flags, iconpath = AchievementsForever.GetAchievementInfo(assetID);
 			
 			if ( month ) then
 				metaCriteria.date = string.format(SHORTDATE, day, month, year);
@@ -1191,7 +1191,7 @@ function AchievementsFrameSummary_Update(isCompare)
 	if Achievements and Achievements.GetSuggestedAchievements then
 		ACHIEVEMENTUI_DEFAULTSUMMARYACHIEVEMENTS = Achievements.GetSuggestedAchievements();
 	end
-	AchievementsFrameSummary_UpdateAchievements(GetLatestCompletedAchievements());
+	AchievementsFrameSummary_UpdateAchievements(AchievementsForever.GetLatestCompletedAchievements());
 end
 
 function AchievementsFrameSummary_UpdateAchievements(...)
@@ -1225,7 +1225,7 @@ function AchievementsFrameSummary_UpdateAchievements(...)
 		
 		if ( i <= numAchievements ) then
 			achievementID = select(i, ...);
-			id, name, points, completed, month, day, year, description, flags, icon = GetAchievementInfo(achievementID);
+			id, name, points, completed, month, day, year, description, flags, icon = AchievementsForever.GetAchievementInfo(achievementID);
 			button.label:SetText(name);
 			button.description:SetText(description);
 			AchievementShield_SetPoints(points, button.shield.points, GameFontNormal, GameFontNormalSmall);
@@ -1253,11 +1253,11 @@ function AchievementsFrameSummary_UpdateAchievements(...)
 				if ( not achievementID ) then
 					break;
 				end
-				id, name, points, completed, month, day, year, description, flags, icon = GetAchievementInfo(achievementID);
+				id, name, points, completed, month, day, year, description, flags, icon = AchievementsForever.GetAchievementInfo(achievementID);
 				if ( completed ) then
 					defaultAchievementCount = defaultAchievementCount+1;
 				else
-					id, name, points, completed, month, day, year, description, flags, icon = GetAchievementInfo(achievementID);
+					id, name, points, completed, month, day, year, description, flags, icon = AchievementsForever.GetAchievementInfo(achievementID);
 					if ( not id ) then
 						break;
 					end
@@ -1295,7 +1295,7 @@ function AchievementsFrameSummary_UpdateAchievements(...)
 end
 
 function AchievementsFrameSummaryCategoriesStatusBar_Update()
-	local total, completed = GetNumCompletedAchievements();
+	local total, completed = AchievementsForever.GetNumCompletedAchievements();
 	AchievementsFrameSummaryCategoriesStatusBar:SetMinMaxValues(0, total);
 	AchievementsFrameSummaryCategoriesStatusBar:SetValue(completed);
 	AchievementsFrameSummaryCategoriesStatusBarText:SetText(completed.."/"..total);
@@ -1317,7 +1317,7 @@ function AchievementsFrameSummaryCategory_OnLoad (self)
 	local name = self:GetName();
 	self.text = _G[name .. "Text"];
 	
-	local categoryName = GetCategoryInfo(self:GetID());
+	local categoryName = AchievementsForever.GetCategoryInfo(self:GetID());
 	_G[name .. "Label"]:SetText(categoryName);
 end
 
@@ -1326,7 +1326,7 @@ function AchievementFrame_SelectAchievement(id, forceSelect)
 		return;
 	end
 	
-	local _, _, _, achCompleted = GetAchievementInfo(id);
+	local _, _, _, achCompleted = AchievementsForever.GetAchievementInfo(id);
 	if ( achCompleted and (ACHIEVEMENTUI_SELECTEDFILTER == AchievementsFrameFilters[ACHIEVEMENT_FILTER_INCOMPLETE].func) ) then
 		AchievementFrame_SetFilter(ACHIEVEMENT_FILTER_ALL);
 	elseif ( (not achCompleted) and (ACHIEVEMENTUI_SELECTEDFILTER == AchievementsFrameFilters[ACHIEVEMENT_FILTER_COMPLETE].func) ) then
@@ -1339,24 +1339,24 @@ function AchievementFrame_SelectAchievement(id, forceSelect)
 	AchievementsFrameAchievements:Show();
 
 	-- Figure out if this is part of a progressive achievement; if it is and it's incomplete, make sure the previous level was completed. If not, find the first incomplete achievement in the chain and display that instead.
-	local _, _, _, completed = GetAchievementInfo(id);
-	if ( not completed and GetPreviousAchievement(id) ) then
-		local prevID = GetPreviousAchievement(id);
-		_, _, _, completed = GetAchievementInfo(prevID);
+	local _, _, _, completed = AchievementsForever.GetAchievementInfo(id);
+	if ( not completed and AchievementsForever.GetPreviousAchievement(id) ) then
+		local prevID = AchievementsForever.GetPreviousAchievement(id);
+		_, _, _, completed = AchievementsForever.GetAchievementInfo(prevID);
 		while ( prevID and not completed ) do
 			id = prevID;
-			prevID = GetPreviousAchievement(id);
+			prevID = AchievementsForever.GetPreviousAchievement(id);
 			if ( prevID ) then
-				_, _, _, completed = GetAchievementInfo(prevID);
+				_, _, _, completed = AchievementsForever.GetAchievementInfo(prevID);
 			end
 		end
 	elseif ( completed ) then 
 		local nextID;
-		nextID, completed = GetNextAchievement(id);
+		nextID, completed = AchievementsForever.GetNextAchievement(id);
 		if ( nextID and completed ) then
 			local newID
 			while ( nextID and completed ) do
-				newID, completed = GetNextAchievement(nextID);
+				newID, completed = AchievementsForever.GetNextAchievement(nextID);
 				if ( completed ) then
 					nextID = newID;
 				end
@@ -1366,7 +1366,7 @@ function AchievementFrame_SelectAchievement(id, forceSelect)
 	end
 	
 	AchievementsFrameCategories_ClearSelection();
-	local category = GetAchievementCategory(id);
+	local category = AchievementsForever.GetAchievementCategory(id);
 	
 	local categoryIndex, parent, hidden = 0;
 	for i, entry in next, ACHIEVEMENTUI_CATEGORIES do
@@ -1456,8 +1456,8 @@ function AchievementFrame_SelectSummaryStatistic (criteriaId)
 	
 	AchievementsFrameCategories_ClearSelection();
 	
-	local id = GetAchievementInfoFromCriteria(criteriaId);
-	local category = GetAchievementCategory(id);
+	local id = AchievementsForever.GetAchievementInfoFromCriteria(criteriaId);
+	local category = AchievementsForever.GetAchievementCategory(id);
 	
 	local categoryIndex, parent, hidden = 0;
 	for i, entry in next, ACHIEVEMENTUI_CATEGORIES do
@@ -1560,12 +1560,12 @@ function AchievementsFrameComparison_OnHide ()
 	AchievementsFrame:SetAttribute("UIPanelLayout-xOffset", 80);
 	UpdateUIPanelPositions(AchievementsFrame);
 	AchievementsFrame.isComparison = false;
-	ClearAchievementComparisonUnit();
+	AchievementsForever.ClearAchievementComparisonUnit();
 end
 
 function AchievementsFrameComparison_OnEvent (self, event, ...)
 	if ( event == "INSPECT_ACHIEVEMENT_READY" ) then
-		AchievementsFrameComparisonHeaderPoints:SetText(GetComparisonAchievementPoints());
+		AchievementsFrameComparisonHeaderPoints:SetText(AchievementsForever.GetComparisonAchievementPoints());
 		AchievementsFrameComparison_UpdateStatusBars(achievementFunctions.selectedCategory)
 	elseif ( event == "UNIT_PORTRAIT_UPDATE" ) then
 		local updateUnit = ...;
@@ -1578,10 +1578,10 @@ function AchievementsFrameComparison_OnEvent (self, event, ...)
 end
 
 function AchievementsFrameComparison_SetUnit (unit)
-	ClearAchievementComparisonUnit();
-	SetAchievementComparisonUnit(unit);
+	AchievementsForever.ClearAchievementComparisonUnit();
+	AchievementsForever.SetAchievementComparisonUnit(unit);
 	
-	AchievementsFrameComparisonHeaderPoints:SetText(GetComparisonAchievementPoints());
+	AchievementsFrameComparisonHeaderPoints:SetText(AchievementsForever.GetComparisonAchievementPoints());
 	AchievementsFrameComparisonHeaderName:SetText(UnitName(unit));
 	SetPortraitTexture(AchievementsFrameComparisonHeaderPortrait, unit);
 	AchievementsFrameComparisonHeaderPortrait.unit = unit;
@@ -1590,7 +1590,7 @@ function AchievementsFrameComparison_SetUnit (unit)
 end
 
 function AchievementsFrameComparison_DisplayAchievement (button, category, index)
-	local id, name, points, completed, month, day, year, description, flags, icon, rewardText = GetAchievementInfo(category, index);
+	local id, name, points, completed, month, day, year, description, flags, icon, rewardText = AchievementsForever.GetAchievementInfo(category, index);
 	if ( not id ) then
 		button:Hide();
 		return;
@@ -1598,7 +1598,7 @@ function AchievementsFrameComparison_DisplayAchievement (button, category, index
 		button:Show();
 	end
 	
-	if ( GetPreviousAchievement(id) ) then
+	if ( AchievementsForever.GetPreviousAchievement(id) ) then
 		-- If this is a progressive achievement, show the total score.
 		points = AchievementButton_GetProgressivePoints(id);
 	end
@@ -1609,7 +1609,7 @@ function AchievementsFrameComparison_DisplayAchievement (button, category, index
 		local player = button.player;
 		local friend = button.friend;
 		
-		local friendCompleted, friendMonth, friendDay, friendYear = GetAchievementComparisonInfo(id);
+		local friendCompleted, friendMonth, friendDay, friendYear = AchievementsForever.GetAchievementComparisonInfo(id);
 		player.label:SetText(name);		
 	
 		player.description:SetText(description);

@@ -709,14 +709,14 @@ end
 
 function Resolvers.BuildPlayerAuraSnapshot(unit)
 	local snapshot = { spellIDs = {}, names = {} };
-	if not UnitAura then
+	if not AchievementsForeverCompat.UnitAura then
 		return snapshot;
 	end
 	unit = unit or "player";
 	for filterIndex = 1, 2 do
 		local filter = filterIndex == 1 and "HELPFUL" or "HARMFUL";
 		for auraIndex = 1, 40 do
-			local name, _, _, _, _, _, _, _, _, auraSpellID = UnitAura(unit, auraIndex, filter);
+			local name, _, _, _, _, _, _, _, _, auraSpellID = AchievementsForeverCompat.UnitAura(unit, auraIndex, filter);
 			if not name then
 				break;
 			end
@@ -1105,8 +1105,8 @@ local function BuildSkillLineCache()
 	end
 
 	local cache = {};
-	for skillIndex = 1, GetNumSkillLines() do
-		local skillName, isHeader, _, skillRank, _, skillModifier, skillMaxRank = GetSkillLineInfo(skillIndex);
+	for skillIndex = 1, AchievementsForeverCompat.GetNumSkillLines() do
+		local skillName, isHeader, _, skillRank, _, skillModifier, skillMaxRank = AchievementsForeverCompat.GetSkillLineInfo(skillIndex);
 		if skillName and not isHeader then
 			local normalizedSkillName = string.lower(skillName);
 			local skillLineID = byName[normalizedSkillName];
@@ -1163,7 +1163,7 @@ local function GetFactionStateByID(factionID)
 		return nil;
 	end
 
-	local name, _, standingID, barMin, barMax, barValue = GetFactionInfoByID(factionID);
+	local name, _, standingID, barMin, barMax, barValue = AchievementsForeverCompat.GetFactionInfoByID(factionID);
 	if not name then
 		return nil;
 	end
@@ -1178,8 +1178,8 @@ local function GetFactionStateByID(factionID)
 end
 
 local function RestoreCollapsedFactionHeaders(collapsedHeaders)
-	for factionIndex = GetNumFactions(), 1, -1 do
-		local name, _, _, _, _, _, _, _, isHeader, isCollapsed = GetFactionInfo(factionIndex);
+	for factionIndex = AchievementsForeverCompat.GetNumFactions(), 1, -1 do
+		local name, _, _, _, _, _, _, _, isHeader, isCollapsed = AchievementsForeverCompat.GetFactionInfo(factionIndex);
 		if name and isHeader and not isCollapsed and collapsedHeaders[name] then
 			CollapseFactionHeader(factionIndex);
 		end
@@ -1189,8 +1189,8 @@ end
 local function BuildFactionCountCache()
 	local collapsedHeaders = {};
 	local factionIndex = 1;
-	while factionIndex <= GetNumFactions() do
-		local name, _, _, _, _, _, _, _, isHeader, isCollapsed = GetFactionInfo(factionIndex);
+	while factionIndex <= AchievementsForeverCompat.GetNumFactions() do
+		local name, _, _, _, _, _, _, _, isHeader, isCollapsed = AchievementsForeverCompat.GetFactionInfo(factionIndex);
 		if name and isHeader and isCollapsed then
 			collapsedHeaders[name] = true;
 			ExpandFactionHeader(factionIndex);
@@ -1199,8 +1199,8 @@ local function BuildFactionCountCache()
 	end
 
 	local counts = { honored = 0, revered = 0, exalted = 0, encountered = 0 };
-	for factionIndex = 1, GetNumFactions() do
-		local name, _, standingID, _, _, _, _, _, isHeader, _, hasRep = GetFactionInfo(factionIndex);
+	for factionIndex = 1, AchievementsForeverCompat.GetNumFactions() do
+		local name, _, standingID, _, _, _, _, _, isHeader, _, hasRep = AchievementsForeverCompat.GetFactionInfo(factionIndex);
 		if name and (not isHeader or hasRep) and standingID and standingID > 0 then
 			counts.encountered = counts.encountered + 1;
 			if standingID >= 6 then
@@ -1697,12 +1697,12 @@ local function GetCompletedQuestLookup()
 		return completedQuestLookupCache;
 	end
 
-	if not GetQuestsCompleted then
+	if not AchievementsForeverCompat.GetQuestsCompleted then
 		return nil;
 	end
 
 	local completedQuests = {};
-	GetQuestsCompleted(completedQuests);
+	AchievementsForeverCompat.GetQuestsCompleted(completedQuests);
 	completedQuestLookupCache = completedQuests;
 	return completedQuestLookupCache;
 end
@@ -1959,8 +1959,8 @@ local function ResolveReachedPVPRank(context)
 
 	local _, _, lifetimeRank = GetPVPLifetimeStats();
 	local highestRank = NormalizePVPRank(lifetimeRank);
-	if highestRank == 0 and UnitPVPRank then
-		highestRank = NormalizePVPRank(UnitPVPRank("player"));
+	if highestRank == 0 and AchievementsForeverCompat.UnitPVPRank then
+		highestRank = NormalizePVPRank(AchievementsForeverCompat.UnitPVPRank("player"));
 	end
 
 	return BuildResult(highestRank >= requiredRank, highestRank, requiredRank, nil, "pvp-rank");
@@ -2134,7 +2134,7 @@ local function BuildInventorySlotItemContext(inventorySlot, criteriaSlot)
 	local link = GetInventoryItemLink("player", inventorySlot);
 	if not link then return nil, "empty-slot"; end
 	local itemID = type(link) == "string" and tonumber(string.match(link, "item:(%d+)")) or nil;
-	local _, _, quality, ilvl = GetItemInfo(link);
+	local _, _, quality, ilvl = AchievementsForeverCompat.GetItemInfo(link);
 	local itemRecord = itemID and ITEM_DATA[itemID];
 	return {
 		slot = criteriaSlot,
@@ -3086,8 +3086,8 @@ function Resolvers.HasActiveWorldStateContext()
 	if ok and (instanceType == "pvp" or instanceType == "arena") then
 		return true;
 	end
-	if type(GetNumWorldStateUI) == "function" then
-		local count = GetNumWorldStateUI();
+	if type(AchievementsForeverCompat.GetNumWorldStateUI) == "function" then
+		local count = AchievementsForeverCompat.GetNumWorldStateUI();
 		if count and count > 0 then
 			return true;
 		end
@@ -3104,11 +3104,11 @@ function Resolvers.RecordWorldStateScan()
 		Private.state.lastWorldStateScanMapID = mapID;
 	end
 	local values, expressions = Resolvers.PrepareWorldStateScanCache(mapID);
-	if type(GetNumWorldStateUI) == "function" and type(GetWorldStateUIInfo) == "function" then
-		local count = GetNumWorldStateUI();
+	if type(AchievementsForeverCompat.GetNumWorldStateUI) == "function" and type(AchievementsForeverCompat.GetWorldStateUIInfo) == "function" then
+		local count = AchievementsForeverCompat.GetNumWorldStateUI();
 		if count and count > 0 then
 			for i = 1, count do
-				local _, state, third, fourth, fifth, sixth, seventh = GetWorldStateUIInfo(i);
+				local _, state, third, fourth, fifth, sixth, seventh = AchievementsForeverCompat.GetWorldStateUIInfo(i);
 				local text, icon, tooltip;
 				state, text, icon, tooltip = Resolvers.NormalizeWorldStateUIInfo(state, third, fourth, fifth, sixth, seventh);
 				Resolvers.RecordKnownWorldStateText(text, mapID, expressions, values, icon, tooltip);
@@ -3192,7 +3192,7 @@ local function ExtractItemIDFromItemInfo(itemInfo)
 	end
 	if not itemLink then
 		linkOK, result = pcall(function()
-			return select(2, GetItemInfo(itemInfo));
+			return select(2, AchievementsForeverCompat.GetItemInfo(itemInfo));
 		end);
 		if linkOK then
 			itemLink = result;
@@ -3794,14 +3794,14 @@ end
 
 function Resolvers.PlayerHasAuraSpell(spellID)
 	spellID = tonumber(spellID) or 0;
-	if spellID == 0 or not UnitAura then
+	if spellID == 0 or not AchievementsForeverCompat.UnitAura then
 		return nil;
 	end
 
 	for filterIndex = 1, 2 do
 		local filter = filterIndex == 1 and "HELPFUL" or "HARMFUL";
 		for auraIndex = 1, 40 do
-			local name, _, _, _, _, _, _, _, _, auraSpellID = UnitAura("player", auraIndex, filter);
+			local name, _, _, _, _, _, _, _, _, auraSpellID = AchievementsForeverCompat.UnitAura("player", auraIndex, filter);
 			if not name then
 				break;
 			end
@@ -3899,7 +3899,7 @@ local SOUL_OF_IRON_ACHIEVEMENT_BOSS_NPCS = {
 local function BuildAuraNameLookup(spellIDs, fallbackNames)
 	local names = {};
 	for _, spellID in ipairs(spellIDs) do
-		local name = GetSpellInfo(spellID);
+		local name = AchievementsForeverCompat.GetSpellInfo(spellID);
 		if type(name) == "string" and name ~= "" then
 			names[name] = true;
 		end
@@ -3962,7 +3962,7 @@ local function PlayerHasAnyAuraSpellOrName(spellIDs, cacheField, buildNameLookup
 	for filterIndex = 1, 2 do
 		local filter = filterIndex == 1 and "HELPFUL" or "HARMFUL";
 		for auraIndex = 1, 40 do
-			local name = UnitAura("player", auraIndex, filter);
+			local name = AchievementsForeverCompat.UnitAura("player", auraIndex, filter);
 			if not name then
 				break;
 			end
@@ -4457,7 +4457,7 @@ function Resolvers.GetArenaRating(teamSize, personal)
 
 	local maxTeams = MAX_ARENA_TEAMS or 3;
 	for teamIndex = 1, maxTeams do
-		local values = { GetArenaTeam(teamIndex) };
+		local values = { AchievementsForeverCompat.GetArenaTeam(teamIndex) };
 		local size = tonumber(values[2]);
 		if size == teamSize then
 			if personal then
@@ -4877,7 +4877,7 @@ function Resolvers.RecordLootAcquisitionCriteria(message)
 			local itemID = ExtractItemIDFromLink(itemLink);
 			local itemRecord = itemID and ITEM_DATA[itemID] or nil;
 			local itemQuality, itemLevel;
-			local _, _, quality, level = GetItemInfo(itemLink);
+			local _, _, quality, level = AchievementsForeverCompat.GetItemInfo(itemLink);
 			itemQuality = quality;
 			itemLevel = level;
 			local ctx = {
@@ -5148,7 +5148,7 @@ function Resolvers.RecordVendorItemSale(bagID, slotID)
 	end
 	local quantity = GetContainerItemCountCompat(bagID, slotID) or 1;
 	local vendorPrice = 0;
-	local sellPrice = select(11, GetItemInfo(itemID));
+	local sellPrice = select(11, AchievementsForeverCompat.GetItemInfo(itemID));
 	vendorPrice = tonumber(sellPrice) or 0;
 	if vendorPrice <= 0 then
 		return false;
@@ -5239,7 +5239,7 @@ end
 
 function Resolvers.ResolveBankSlotsPurchased(context)
 	local requiredQuantity = context.requiredQuantity or GetRequiredQuantity(context.criteriaTree);
-	local bankSlots = GetNumBankSlots();
+	local bankSlots = AchievementsForeverCompat.GetNumBankSlots();
 	local quantity = tonumber(bankSlots) or 0;
 	quantity = ApplySavedProgressQuantity(context, quantity, requiredQuantity);
 	return BuildResult(quantity >= requiredQuantity, quantity, requiredQuantity, nil, "bank-slots");
@@ -5787,10 +5787,10 @@ function Resolvers.GetCurrentGroupSize()
 		return count;
 	end
 	if IsInRaid() then
-		return GetNumRaidMembers and (tonumber(GetNumRaidMembers()) or 0) or 40;
+		return AchievementsForeverCompat.GetNumRaidMembers and (tonumber(AchievementsForeverCompat.GetNumRaidMembers()) or 0) or 40;
 	end
 	if IsInGroup() then
-		return GetNumPartyMembers and ((tonumber(GetNumPartyMembers()) or 0) + 1) or 2;
+		return AchievementsForeverCompat.GetNumPartyMembers and ((tonumber(AchievementsForeverCompat.GetNumPartyMembers()) or 0) + 1) or 2;
 	end
 	return 1;
 end
@@ -8163,6 +8163,72 @@ criteriaTreeOperatorHandlers[CRITERIA_TREE_OPERATOR.SUM_CHILDREN_WEIGHT] = Resol
 Achievements.ResolveCriteriaTree = Resolvers.ResolveCriteriaTree;
 Achievements.RegisterQuestAreaQuests = Resolvers.RegisterQuestAreaQuests;
 Achievements.RegisterQuestSortQuests = Resolvers.RegisterQuestSortQuests;
+
+-- AchievementsForever: the Forever client does not deliver the combat log to
+-- addons, but it fires UNIT_DIED(guid) for units that die near the player.
+-- A creature dying while the player is in combat, or within a few seconds of
+-- leaving it, is treated as a kill by the player's group. Kill criteria that
+-- need more than that (killing blows, player kills) stay on the native
+-- statistics instead.
+local unitDiedLastCombatAt = 0;
+local unitDiedCombatFrame = CreateFrame("Frame");
+pcall(unitDiedCombatFrame.RegisterEvent, unitDiedCombatFrame, "PLAYER_REGEN_DISABLED");
+pcall(unitDiedCombatFrame.RegisterEvent, unitDiedCombatFrame, "PLAYER_REGEN_ENABLED");
+unitDiedCombatFrame:SetScript("OnEvent", function()
+	unitDiedLastCombatAt = GetTime();
+end);
+
+local function HandleUnitDiedEvent(destGUID)
+	if type(destGUID) ~= "string" or destGUID == "" then
+		return false;
+	end
+	local unitType = string.match(destGUID, "^(%a+)%-");
+	if unitType ~= "Creature" and unitType ~= "Vehicle" then
+		return false;
+	end
+	local inCombat = (UnitAffectingCombat and UnitAffectingCombat("player")) or (GetTime() - unitDiedLastCombatAt) < 4;
+	if not inCombat then
+		return false;
+	end
+	local creatureID = GetCreatureIDFromGUID(destGUID);
+	if not creatureID then
+		return false;
+	end
+
+	local playerGUID = UnitGUID("player");
+	local sourceFlags = bit.bor(COMBATLOG_OBJECT_AFFILIATION_MINE or 0x00000001, COMBATLOG_OBJECT_TYPE_PLAYER or 0x00000400);
+	local destFlags = bit.bor(COMBATLOG_OBJECT_AFFILIATION_OUTSIDER or 0x00000008, COMBATLOG_OBJECT_REACTION_HOSTILE or 0x00000040, COMBATLOG_OBJECT_TYPE_NPC or 0x00000800);
+	local ctx = BuildKillCombatContext(playerGUID, sourceFlags, destGUID, destFlags, creatureID);
+
+	local recorded = false;
+	local refreshTypes;
+	if Resolvers.RecordSoulOfIronBossKill(creatureID) then
+		recorded = true;
+	end
+	Resolvers.RecordCriteriaStart(CRITERIA_START_EVENT.KILL_NPC, creatureID);
+	if RecordCombatCriteriaAsset(CRITERIA_TYPE.KILL_NPC, creatureID, 1) then
+		recorded = true;
+		refreshTypes = Resolvers.MarkCriteriaRefreshType(refreshTypes, CRITERIA_TYPE.KILL_NPC);
+	end
+	if RecordCriteriaEvent(CRITERIA_TYPE.KILL_NPC, creatureID, ctx) then
+		recorded = true;
+		refreshTypes = Resolvers.MarkCriteriaRefreshType(refreshTypes, CRITERIA_TYPE.KILL_NPC);
+	end
+	if RecordCriteriaEvent(CRITERIA_TYPE.KILL_ANY_NPC, 0, ctx) then
+		recorded = true;
+		refreshTypes = Resolvers.MarkCriteriaRefreshType(refreshTypes, CRITERIA_TYPE.KILL_ANY_NPC);
+	end
+	if recorded then
+		if not (Resolvers.ScheduleCriteriaTypesRefresh and Resolvers.ScheduleCriteriaTypesRefresh(refreshTypes, true, 0.15, "unit-died")) then
+			if Achievements.ScheduleCriteriaRefresh then
+				Achievements.ScheduleCriteriaRefresh(true, 0.15, "unit-died");
+			end
+		end
+	end
+	return recorded;
+end
+Achievements.HandleUnitDiedEvent = HandleUnitDiedEvent;
+
 Achievements.HandleCombatLogCriteria = HandleCombatLogCriteria;
 Achievements.RecordUsedItem = RecordUsedItemID;
 Achievements.RecordPlayerDeath = RecordPlayerDeath;

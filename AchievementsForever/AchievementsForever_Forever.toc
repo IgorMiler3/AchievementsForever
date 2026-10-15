@@ -12,10 +12,12 @@
 ## SavedVariables: AchievementsForeverDB
 ## SavedVariablesPerCharacter: AchievementsForeverCharacterDB
 
+AchievementsForeverCompat.lua
 Achievements.lua
 AchievementsCriteriaResolvers.lua
 AchievementsCriteria.lua
 AchievementsMicroButton.lua
+AchievementsForeverOverrides.lua
 AchievementsChatLinks.lua
 AchievementsGuildBroadcast.lua
 AchievementsTitles.lua

@@ -780,7 +780,7 @@ local function SelectNextTitleMenuEntry(entries)
 end
 
 local function ShowFallbackTitleMenu(button, entries)
-	if EasyMenu then
+	if AchievementsForeverCompat.EasyMenu then
 		if not fallbackTitleMenuFrame then
 			local ok, menuFrame = pcall(CreateFrame, "Frame", "AchievementsPaperDollTitleMenu", UIParent or button, "UIDropDownMenuTemplate");
 			if ok then
@@ -799,7 +799,7 @@ local function ShowFallbackTitleMenu(button, entries)
 					keepShownOnClick = false,
 				};
 			end
-			EasyMenu(menu, fallbackTitleMenuFrame, button, 0, 0, "MENU");
+			AchievementsForeverCompat.EasyMenu(menu, fallbackTitleMenuFrame, button, 0, 0, "MENU");
 			return;
 		end
 	end
@@ -1276,7 +1276,7 @@ local titleEventFrame = CreateFrame("Frame");
 		end
 	end);
 
-SLASH_ACHIEVEMENTSTITLE1 = "/ach-title";
+SLASH_ACHIEVEMENTSTITLE1 = "/af-title";
 SlashCmdList["ACHIEVEMENTSTITLE"] = function(arg)
 	local command = tostring(arg or ""):match("^%s*(.-)%s*$");
 	if command == "" or string.lower(command) == "list" then
@@ -1299,5 +1299,5 @@ SlashCmdList["ACHIEVEMENTSTITLE"] = function(arg)
 			return;
 		end
 	end
-	PrintMessage("Usage: /ach-title, /ach-title <number>, or /ach-title none");
+	PrintMessage("Usage: /af-title, /af-title <number>, or /af-title none");
 end

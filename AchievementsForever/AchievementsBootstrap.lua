@@ -19,15 +19,15 @@ if Achievements.hookSimpleActionCriteria then
 end
 
 local eventFrame = CreateFrame("Frame");
-eventFrame:RegisterEvent("ADDON_LOADED");
-eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD");
-eventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA");
-eventFrame:RegisterEvent("PLAYER_LEVEL_UP");
-eventFrame:RegisterEvent("QUEST_ACCEPTED");
-eventFrame:RegisterEvent("QUEST_TURNED_IN");
-eventFrame:RegisterEvent("QUEST_LOG_UPDATE");
-eventFrame:RegisterEvent("MAP_EXPLORATION_UPDATED");
-eventFrame:RegisterEvent("SPELLS_CHANGED");
+pcall(eventFrame.RegisterEvent, eventFrame, "ADDON_LOADED");
+pcall(eventFrame.RegisterEvent, eventFrame, "PLAYER_ENTERING_WORLD");
+pcall(eventFrame.RegisterEvent, eventFrame, "ZONE_CHANGED_NEW_AREA");
+pcall(eventFrame.RegisterEvent, eventFrame, "PLAYER_LEVEL_UP");
+pcall(eventFrame.RegisterEvent, eventFrame, "QUEST_ACCEPTED");
+pcall(eventFrame.RegisterEvent, eventFrame, "QUEST_TURNED_IN");
+pcall(eventFrame.RegisterEvent, eventFrame, "QUEST_LOG_UPDATE");
+pcall(eventFrame.RegisterEvent, eventFrame, "MAP_EXPLORATION_UPDATED");
+pcall(eventFrame.RegisterEvent, eventFrame, "SPELLS_CHANGED");
 pcall(eventFrame.RegisterEvent, eventFrame, "LEARNED_SPELL_IN_TAB");
 pcall(eventFrame.RegisterEvent, eventFrame, "PLAYER_TALENT_UPDATE");
 pcall(eventFrame.RegisterEvent, eventFrame, "ACTIVE_TALENT_GROUP_CHANGED");
@@ -41,31 +41,32 @@ if eventFrame.RegisterUnitEvent then
 	eventFrame:RegisterUnitEvent("UNIT_AURA", "player");
 	eventFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player");
 else
-	eventFrame:RegisterEvent("UNIT_AURA");
-	eventFrame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED");
+	pcall(eventFrame.RegisterEvent, eventFrame, "UNIT_AURA");
+	pcall(eventFrame.RegisterEvent, eventFrame, "UNIT_SPELLCAST_SUCCEEDED");
 end
-eventFrame:RegisterEvent("SKILL_LINES_CHANGED");
-eventFrame:RegisterEvent("UPDATE_FACTION");
-eventFrame:RegisterEvent("BAG_UPDATE_DELAYED");
-eventFrame:RegisterEvent("ITEM_PUSH");
-eventFrame:RegisterEvent("LOOT_OPENED");
-eventFrame:RegisterEvent("CHAT_MSG_LOOT");
-eventFrame:RegisterEvent("CHAT_MSG_MONEY");
-eventFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED");
-eventFrame:RegisterEvent("PLAYERBANKSLOTS_CHANGED");
-eventFrame:RegisterEvent("PLAYER_MONEY");
-eventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
-eventFrame:RegisterEvent("PLAYER_DEAD");
-eventFrame:RegisterEvent("PLAYER_PVP_RANK_CHANGED");
-eventFrame:RegisterEvent("UPDATE_BATTLEFIELD_STATUS");
+pcall(eventFrame.RegisterEvent, eventFrame, "SKILL_LINES_CHANGED");
+pcall(eventFrame.RegisterEvent, eventFrame, "UPDATE_FACTION");
+pcall(eventFrame.RegisterEvent, eventFrame, "BAG_UPDATE_DELAYED");
+pcall(eventFrame.RegisterEvent, eventFrame, "ITEM_PUSH");
+pcall(eventFrame.RegisterEvent, eventFrame, "LOOT_OPENED");
+pcall(eventFrame.RegisterEvent, eventFrame, "CHAT_MSG_LOOT");
+pcall(eventFrame.RegisterEvent, eventFrame, "CHAT_MSG_MONEY");
+pcall(eventFrame.RegisterEvent, eventFrame, "PLAYER_EQUIPMENT_CHANGED");
+pcall(eventFrame.RegisterEvent, eventFrame, "PLAYERBANKSLOTS_CHANGED");
+pcall(eventFrame.RegisterEvent, eventFrame, "PLAYER_MONEY");
+pcall(eventFrame.RegisterEvent, eventFrame, "COMBAT_LOG_EVENT_UNFILTERED");
+pcall(eventFrame.RegisterEvent, eventFrame, "UNIT_DIED"); -- AchievementsForever port applied
+pcall(eventFrame.RegisterEvent, eventFrame, "PLAYER_DEAD");
+pcall(eventFrame.RegisterEvent, eventFrame, "PLAYER_PVP_RANK_CHANGED");
+pcall(eventFrame.RegisterEvent, eventFrame, "UPDATE_BATTLEFIELD_STATUS");
 pcall(eventFrame.RegisterEvent, eventFrame, "UPDATE_BATTLEFIELD_SCORE");
 pcall(eventFrame.RegisterEvent, eventFrame, "BATTLEGROUND_POINTS_UPDATE");
 pcall(eventFrame.RegisterEvent, eventFrame, "PVP_WORLDSTATE_UPDATE");
-eventFrame:RegisterEvent("CHAT_MSG_SYSTEM");
+pcall(eventFrame.RegisterEvent, eventFrame, "CHAT_MSG_SYSTEM");
 pcall(eventFrame.RegisterEvent, eventFrame, "CHAT_MSG_BG_SYSTEM_ALLIANCE");
 pcall(eventFrame.RegisterEvent, eventFrame, "CHAT_MSG_BG_SYSTEM_HORDE");
 pcall(eventFrame.RegisterEvent, eventFrame, "CHAT_MSG_BG_SYSTEM_NEUTRAL");
-eventFrame:RegisterEvent("CHAT_MSG_TEXT_EMOTE");
+pcall(eventFrame.RegisterEvent, eventFrame, "CHAT_MSG_TEXT_EMOTE");
 pcall(eventFrame.RegisterEvent, eventFrame, "GROUP_ROSTER_UPDATE");
 -- Used to detect when guild chat is actually joined so own-achievement
 -- broadcasts that fire during the early-login window can wait until they'll
@@ -135,6 +136,13 @@ eventFrame:SetScript("OnEvent", function(_, event, arg1, arg2, arg3, arg4, arg5)
 			elseif DEFAULT_CHAT_FRAME then
 				DEFAULT_CHAT_FRAME:AddMessage(message);
 			end
+		end
+		return;
+	end
+
+	if event == "UNIT_DIED" then
+		if Achievements.HandleUnitDiedEvent then
+			Achievements.HandleUnitDiedEvent(arg1);
 		end
 		return;
 	end

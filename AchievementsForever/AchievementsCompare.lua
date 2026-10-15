@@ -653,7 +653,7 @@ function Achievements.RequestAchievementComparison(target, unit, forceShortName)
 	local requestKey = GetPendingRequestKey(normalised, targetHasRealm);
 	DebugCompare("request final resolvedTarget=" .. DebugValue(resolvedTarget) .. " resolvedHasRealm=" .. DebugValue(resolvedHasRealm) .. " normalised=" .. DebugValue(normalised) .. " requestKey=" .. DebugValue(requestKey) .. " sendTarget=" .. DebugValue(sendTarget));
 	if not normalised then
-		PrintMessage("|cffff8080Achievements:|r usage: /ach-compare <name>");
+		PrintMessage("|cffff8080Achievements:|r usage: /af-compare <name>");
 		return;
 	end
 	local now = GetTime();
@@ -700,9 +700,9 @@ end
 RegisterPrefix();
 EnsureListener();
 
-SLASH_ACHIEVEMENTSCOMPARE1 = "/ach-compare";
+SLASH_ACHIEVEMENTSCOMPARE1 = "/af-compare";
 SlashCmdList["ACHIEVEMENTSCOMPARE"] = function(arg)
-	DebugCompare("slash /ach-compare arg=" .. DebugValue(arg));
+	DebugCompare("slash /af-compare arg=" .. DebugValue(arg));
 	Achievements.RequestAchievementComparison(arg, nil, false);
 end
 

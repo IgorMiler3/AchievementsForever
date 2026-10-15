@@ -199,7 +199,7 @@ function Update.PrintVersions()
 	-- (disabled) when installed but not loaded.
 	local dataOk, dataVersion = pcall(C_AddOns.GetAddOnMetadata, "AchievementsForeverData", "Version");
 	if dataOk and dataVersion then
-		local isLoaded = C_AddOns and C_AddOns.IsAddOnLoaded or IsAddOnLoaded;
+		local isLoaded = C_AddOns and C_AddOns.IsAddOnLoaded or AchievementsForeverCompat.IsAddOnLoaded;
 		if isLoaded and isLoaded("AchievementsForeverData") then
 			Print("  AchievementsForeverData: |cffffffff" .. tostring(dataVersion) .. "|r");
 		else
@@ -217,8 +217,8 @@ function Update.PrintVersions()
 	end
 end
 
-SLASH_ACHIEVEMENTSUPDATES1 = "/ach-update";
-SLASH_ACHIEVEMENTSUPDATES2 = "/achievements-update";
+SLASH_ACHIEVEMENTSUPDATES1 = "/af-update";
+SLASH_ACHIEVEMENTSUPDATES2 = "/af-update";
 SlashCmdList["ACHIEVEMENTSUPDATES"] = function()
 	Update.Show();
 end
@@ -270,8 +270,8 @@ end
 
 -- Main slash command, mirroring Deathlog (/dl update) and MRP (/mrp update).
 -- Without a subcommand it toggles the achievement frame.
-SLASH_ACHIEVEMENTS1 = "/ach";
-SLASH_ACHIEVEMENTS2 = "/achievements";
+SLASH_ACHIEVEMENTS1 = "/af-cmd";
+SLASH_ACHIEVEMENTS2 = "/achievementsforever-cmd";
 SlashCmdList["ACHIEVEMENTS"] = function(msg)
 	local command, argument = tostring(msg or ""):match("^%s*(%S*)%s*(.-)%s*$");
 	command = string.lower(command or "");

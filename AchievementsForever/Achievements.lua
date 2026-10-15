@@ -379,12 +379,12 @@ for achievementID, achievement in pairs(ACHIEVEMENT_DATA) do
 	end
 end
 
-local function GetTrackedAchievements()
+local function AchievementsForever.GetTrackedAchievements()
 	AchievementsForeverCharacterDB.tracked = AchievementsForeverCharacterDB.tracked or {};
 	return AchievementsForeverCharacterDB.tracked;
 end
 
-local trackedAchievements = GetTrackedAchievements();
+local trackedAchievements = AchievementsForever.GetTrackedAchievements();
 local comparisonUnit;
 local achievementUICache = {};
 
@@ -402,7 +402,7 @@ Private.dataVersion = ACHIEVEMENTS_DATA.version;
 Private.data = {
 	version = ACHIEVEMENTS_DATA.version,
 	-- Export the UI order tables by reference. Extension addons (e.g.
-	-- AchievementsPlus) must mutate the same tables GetCategoryList() returns;
+	-- AchievementsPlus) must mutate the same tables AchievementsForever.GetCategoryList() returns;
 	-- reading them from _G.AchievementsForeverData is not safe because a standalone
 	-- AchievementsForeverData addon can replace that global after this addon loaded.
 	categoryOrder = CATEGORY_ORDER,
@@ -2015,7 +2015,7 @@ function Achievements.OpenComparisonForName(targetName, points, completed, unit,
 		if Achievements.AchievementFrame_LoadUI then
 			Achievements.AchievementFrame_LoadUI();
 		elseif AchievementFrame_LoadUI then
-			AchievementFrame_LoadUI();
+			AchievementsForever.AchievementFrame_LoadUI();
 		end
 	end
 	if not AchievementsFrame then
@@ -2041,7 +2041,7 @@ function Achievements.OpenComparisonForName(targetName, points, completed, unit,
 			SetPortraitTexture(AchievementsFrameComparisonHeaderPortrait, unit);
 			AchievementsFrameComparisonHeaderPortrait.unit = unit;
 		else
-			SetPortraitToTexture(AchievementsFrameComparisonHeaderPortrait, "Interface\\ICONS\\INV_Misc_QuestionMark");
+			AchievementsForeverCompat.SetPortraitToTexture(AchievementsFrameComparisonHeaderPortrait, "Interface\\ICONS\\INV_Misc_QuestionMark");
 			AchievementsFrameComparisonHeaderPortrait.unit = nil;
 		end
 	end
@@ -2173,7 +2173,7 @@ Private.GetClassColorHex = GetClassColorHex;
 
 if DEBUG then
 -- add a temporary slash command to wipe the whole database for testing purposes
-SLASH_ACHIEVEMENTSTEST1 = "/ach-clear";
+SLASH_ACHIEVEMENTSTEST1 = "/af-clear";
 SlashCmdList["ACHIEVEMENTSTEST"] = function()
 	-- clear both the account-wide and per-character databases.
 	for key in pairs(AchievementsForeverDB) do
@@ -2489,7 +2489,7 @@ end
 
 Achievements.TextureExists = TextureExists;
 
-SLASH_ACHIEVEMENTSDEBUG1 = "/ach-debug";
+SLASH_ACHIEVEMENTSDEBUG1 = "/af-debug";
 SlashCmdList["ACHIEVEMENTSDEBUG"] = function(arg)
 	local rawArg = TrimWhitespace(arg);
 	local arg = string.lower(rawArg);
@@ -2519,7 +2519,7 @@ SlashCmdList["ACHIEVEMENTSDEBUG"] = function(arg)
 			return;
 		end
 		local report = Achievements.DebugEvaluateAllAchievements({ resetWarningCache = true, forceLogging = true });
-		Private.PrintMessage("Achievements " .. (report and report.summary or "debug scan complete") .. ". Use /ach-debug copy to copy the log.");
+		Private.PrintMessage("Achievements " .. (report and report.summary or "debug scan complete") .. ". Use /af-debug copy to copy the log.");
 		return;
 	elseif arg == "off" or arg == "0" or arg == "false" then
 		AchievementsForeverDB.debug = nil;
@@ -2534,13 +2534,13 @@ SlashCmdList["ACHIEVEMENTSDEBUG"] = function(arg)
 	elseif arg == "texture" or arg:sub(1, 8) == "texture " then
 		local path = TrimWhitespace(rawArg:sub(9));
 		if path == "" then
-			Private.PrintMessage("Usage: /ach-debug texture <path>");
+			Private.PrintMessage("Usage: /af-debug texture <path>");
 			return;
 		end
 		TextureExists(path);
 		return;
 	else
-		Private.PrintMessage("Achievements debug commands: /ach-debug, /ach-debug copy, /ach-debug scan, /ach-debug missing-icons, /ach-debug clear, /ach-debug reset, /ach-debug on, /ach-debug off, /ach-debug hide, /ach-debug show, /ach-debug watch, /ach-debug texture <path>");
+		Private.PrintMessage("Achievements debug commands: /af-debug, /af-debug copy, /af-debug scan, /af-debug missing-icons, /af-debug clear, /af-debug reset, /af-debug on, /af-debug off, /af-debug hide, /af-debug show, /af-debug watch, /af-debug texture <path>");
 		return;
 	end
 

@@ -233,8 +233,8 @@ local function BuildQuantityString(quantity, requiredQuantity, criteriaTree)
 	quantity = quantity or 0;
 	requiredQuantity = requiredQuantity or 1;
 
-	if HasCriteriaTreeFlag(criteriaTree, CRITERIA_TREE_FLAGS.IS_MONEY) and GetCoinTextureString then
-		return GetCoinTextureString(quantity);
+	if HasCriteriaTreeFlag(criteriaTree, CRITERIA_TREE_FLAGS.IS_MONEY) and AchievementsForeverCompat.GetCoinTextureString then
+		return AchievementsForeverCompat.GetCoinTextureString(quantity);
 	end
 
 	if HasCriteriaTreeFlag(criteriaTree, CRITERIA_TREE_FLAGS.IS_DATE) and quantity > 0 and date then
@@ -250,7 +250,7 @@ local function BuildStatisticQuantityString(statistic, quantity, criteriaTreeID,
 		return "--";
 	end
 
-	local getCoinTextureString = rawget(_G, "GetCoinTextureString");
+	local getCoinTextureString = AchievementsForeverCompat.GetCoinTextureString;
 	if CriteriaTreeHasFlag(criteriaTreeID, CRITERIA_TREE_FLAG_IS_MONEY) and getCoinTextureString then
 		return getCoinTextureString(quantity);
 	end

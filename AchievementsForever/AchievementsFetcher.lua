@@ -359,7 +359,7 @@ end
 function Achievements.FetchAchievementsFromPlayer(target)
 	EnsureListener();
 	if not RequestPlayer(target) then
-		PrintMessage("Usage: /ach-fetch player <name>");
+		PrintMessage("Usage: /af-fetch player <name>");
 	end
 end
 
@@ -370,7 +370,7 @@ end
 
 EnsureListener();
 
-SLASH_ACHIEVEMENTSFETCHER1 = "/ach-fetch";
+SLASH_ACHIEVEMENTSFETCHER1 = "/af-fetch";
 SlashCmdList["ACHIEVEMENTSFETCHER"] = function(arg)
 	local rawArg = tostring(arg or "");
 	local command, rest = rawArg:match("^(%S*)%s*(.-)$");

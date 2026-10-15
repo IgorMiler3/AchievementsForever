@@ -189,7 +189,7 @@
 				GameTooltip:Hide();
 			</OnLeave>
 			<OnShow>
-				self:SetChecked(IsTrackedAchievement(self:GetParent().id));
+				self:SetChecked(AchievementsForever.IsTrackedAchievement(self:GetParent().id));
 			</OnShow>
 		</Scripts>
 		<NormalTexture file="Interface\Buttons\UI-CheckBox-Up"/>

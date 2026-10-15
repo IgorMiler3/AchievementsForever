@@ -72,7 +72,7 @@ end
 
 function AchievementFrame_OnShow (self)
 	PlaySoundFile(ACHIEVEMENT_MENU_OPEN_SOUND_FILE, "SFX");
-	AchievementsFrameHeaderPoints:SetText(GetTotalAchievementPoints());
+	AchievementsFrameHeaderPoints:SetText(AchievementsForever.GetTotalAchievementPoints());
 	if ( not AchievementsFrame.wasShown ) then
 		AchievementsFrame.wasShown = true;
 		AchievementCategoryButton_OnClick(AchievementsFrameCategoriesContainerButton1);
@@ -277,8 +277,8 @@ function AchievementsFrameCategories_ClearSelection ()
 end
 
 function AchievementsFrameComparison_UpdateStatusBars (id)
-	local numAchievements, numCompleted = GetCategoryNumAchievements(id);
-	local name = GetCategoryInfo(id);
+	local numAchievements, numCompleted = AchievementsForever.GetCategoryNumAchievements(id);
+	local name = AchievementsForever.GetCategoryInfo(id);
 	
 	if ( id == ACHIEVEMENT_COMPARISON_SUMMARY_ID ) then
 		name = ACHIEVEMENT_SUMMARY_CATEGORY;
@@ -290,7 +290,7 @@ function AchievementsFrameComparison_UpdateStatusBars (id)
 	statusBar.title:SetText(string.format(ACHIEVEMENTS_COMPLETED_CATEGORY, name));
 	statusBar.text:SetText(numCompleted.."/"..numAchievements);
 
-	local friendCompleted = GetComparisonCategoryNumAchievements(id);
+	local friendCompleted = AchievementsForever.GetComparisonCategoryNumAchievements(id);
 
 	statusBar = AchievementsFrameComparisonSummaryFriendStatusBar;
 	statusBar:SetMinMaxValues(0, numAchievements);
@@ -309,8 +309,8 @@ end
 
 function AchievementsFrameAchievements_ForceUpdate ()
 	if ( AchievementsFrameAchievements.selection ) then
-		local nextID = GetNextAchievement(AchievementsFrameAchievements.selection);
-		local id, _, _, completed = GetAchievementInfo(AchievementsFrameAchievements.selection);
+		local nextID = AchievementsForever.GetNextAchievement(AchievementsFrameAchievements.selection);
+		local id, _, _, completed = AchievementsForever.GetAchievementInfo(AchievementsFrameAchievements.selection);
 		if ( nextID and completed ) then
 			AchievementsFrameAchievements.selection = nil;
 		end
@@ -434,11 +434,11 @@ end
 
 function AchievementButton_GetProgressivePoints(achievementID)
 	local points;
-	local _, _, progressivePoints, completed = GetAchievementInfo(achievementID);
+	local _, _, progressivePoints, completed = AchievementsForever.GetAchievementInfo(achievementID);
 
-	while GetPreviousAchievement(achievementID) do
-		achievementID = GetPreviousAchievement(achievementID);
-		_, _, points, completed = GetAchievementInfo(achievementID);
+	while AchievementsForever.GetPreviousAchievement(achievementID) do
+		achievementID = AchievementsForever.GetPreviousAchievement(achievementID);
+		_, _, points, completed = AchievementsForever.GetAchievementInfo(achievementID);
 		progressivePoints = progressivePoints+points;
 	end
 	
@@ -450,19 +450,19 @@ function AchievementButton_GetProgressivePoints(achievementID)
 end
 
 function AchievementFrame_GetCategoryNumAchievements_All (categoryID)
-	local numAchievements, numCompleted = GetCategoryNumAchievements(categoryID);
+	local numAchievements, numCompleted = AchievementsForever.GetCategoryNumAchievements(categoryID);
 	
 	return numAchievements, numCompleted, 0;
 end
 
 function AchievementFrame_GetCategoryNumAchievements_Complete (categoryID)
-	local numAchievements, numCompleted = GetCategoryNumAchievements(categoryID);
+	local numAchievements, numCompleted = AchievementsForever.GetCategoryNumAchievements(categoryID);
 	
 	return numCompleted, numCompleted, 0;
 end
 
 function AchievementFrame_GetCategoryNumAchievements_Incomplete (categoryID)
-	local numAchievements, numCompleted = GetCategoryNumAchievements(categoryID);
+	local numAchievements, numCompleted = AchievementsForever.GetCategoryNumAchievements(categoryID);
 	
 	return numAchievements - numCompleted, 0, numCompleted
 end
@@ -528,7 +528,7 @@ function AchievementsFrameStats_Update ()
 	local numButtons = #buttons;
 	local statHeight = 24;
 	
-	local numStats, numCompleted = GetCategoryNumAchievements(category);
+	local numStats, numCompleted = AchievementsForever.GetCategoryNumAchievements(category);
 	
 	local categories = ACHIEVEMENTUI_CATEGORIES;
 	-- clear out table
@@ -541,7 +541,7 @@ function AchievementsFrameStats_Update ()
 		
 		tinsert(displayStatCategoriesStats, {id = category, header = true});
 		for i=1, numStats do
-			local quantity, skip, id = GetStatistic(category, i);
+			local quantity, skip, id = AchievementsForever.GetStatistic(category, i);
 			if ( not skip ) then
 				tinsert(displayStatCategoriesStats, {id = id});
 			end
@@ -550,9 +550,9 @@ function AchievementsFrameStats_Update ()
 		for i, cat in next, categories do
 			if ( cat.parent == category ) then
 				tinsert(displayStatCategoriesStats, {id = cat.id, header = true});
-				numStats = GetCategoryNumAchievements(cat.id);
+				numStats = AchievementsForever.GetCategoryNumAchievements(cat.id);
 				for k=1, numStats do
-					local quantity, skip, id = GetStatistic(cat.id, k);
+					local quantity, skip, id = AchievementsForever.GetStatistic(cat.id, k);
 					if ( not skip ) then
 						tinsert(displayStatCategoriesStats, {id = id});
 					end
@@ -593,14 +593,14 @@ function AchievementsFrameStats_SetStat(button, category, index, colorIndex, isS
 	local id, name;
 	if ( not isSummary ) then
 		if ( not index ) then
-			id, name = GetAchievementInfo(category);
+			id, name = AchievementsForever.GetAchievementInfo(category);
 		else
-			id, name = GetAchievementInfo(category, index);
+			id, name = AchievementsForever.GetAchievementInfo(category, index);
 		end
 		
 	else
 		-- This is on the summary page
-		id, name = GetAchievementInfoFromCriteria(category);
+		id, name = AchievementsForever.GetAchievementInfoFromCriteria(category);
 	end
 
 	if (not id) then
@@ -631,16 +631,16 @@ function AchievementsFrameStats_SetStat(button, category, index, colorIndex, isS
 	end
 	
 	-- Figure out the criteria
-	local numCriteria = GetAchievementNumCriteria(id);
+	local numCriteria = AchievementsForever.GetAchievementNumCriteria(id);
 	if ( numCriteria == 0 ) then
 		-- This is no good!
 	end
 	-- Just show the first criteria for now
 	local criteriaString, criteriaType, completed, quantityNumber, reqQuantity, charName, flags, assetID, quantity;
 	if ( not isSummary ) then
-		quantity = GetStatistic(id);
+		quantity = AchievementsForever.GetStatistic(id);
 	else
-		criteriaString, criteriaType, completed, quantityNumber, reqQuantity, charName, flags, assetID, quantity = GetAchievementCriteriaInfo(category);
+		criteriaString, criteriaType, completed, quantityNumber, reqQuantity, charName, flags, assetID, quantity = AchievementsForever.GetAchievementCriteriaInfo(category);
 	end
 	if ( not quantity ) then
 		quantity = "--";
@@ -664,7 +664,7 @@ function AchievementsFrameStats_SetHeader(button, id)
 	if ( id == ACHIEVEMENT_COMPARISON_STATS_SUMMARY_ID ) then
 		text = ACHIEVEMENT_SUMMARY_CATEGORY;
 	else
-		text = GetCategoryInfo(id);
+		text = AchievementsForever.GetCategoryInfo(id);
 	end
 	button.title:SetText(text);
 	button.title:Show();
@@ -698,11 +698,11 @@ end
 
 function AchievementsFrameSummaryAchievement_OnClick(self)
 	local id = self.id
-	local nextID, completed = GetNextAchievement(id);
+	local nextID, completed = AchievementsForever.GetNextAchievement(id);
 	if ( nextID and completed ) then
 		local newID;
 		while ( nextID and completed ) do
-			newID, completed = GetNextAchievement(nextID);
+			newID, completed = AchievementsForever.GetNextAchievement(nextID);
 			if ( completed ) then
 				nextID = newID;
 			end
@@ -736,13 +736,13 @@ end
 function AchievementFrame_GetCategoryTotalNumAchievements (id, showAll)
 	-- Not recursive because we only have one deep and this saves time.
 	local totalAchievements, totalCompleted = 0, 0;
-	local numAchievements, numCompleted = GetCategoryNumAchievements(id, showAll);
+	local numAchievements, numCompleted = AchievementsForever.GetCategoryNumAchievements(id, showAll);
 	totalAchievements = totalAchievements + numAchievements;
 	totalCompleted = totalCompleted + numCompleted;
 	
 	for _, category in next, ACHIEVEMENTUI_CATEGORIES do
 		if ( category.parent == id ) then
-			numAchievements, numCompleted = GetCategoryNumAchievements(category.id, showAll);
+			numAchievements, numCompleted = AchievementsForever.GetCategoryNumAchievements(category.id, showAll);
 			totalAchievements = totalAchievements + numAchievements;
 			totalCompleted = totalCompleted + numCompleted;
 		end
@@ -901,7 +901,7 @@ function AchievementsFrameComparison_Update ()
 	
 	local offset = HybridScrollFrame_GetOffset(scrollFrame);
 	local buttons = scrollFrame.buttons;
-	local numAchievements, numCompleted = GetCategoryNumAchievements(category);
+	local numAchievements, numCompleted = AchievementsForever.GetCategoryNumAchievements(category);
 	local numButtons = #buttons;
 
 	local achievementIndex;
@@ -929,7 +929,7 @@ function AchievementsFrameComparison_UpdateStats ()
 	local headerHeight = 24;
 	local statHeight = 24;
 	local totalHeight = 0;	
-	local numStats, numCompleted = GetCategoryNumAchievements(category);
+	local numStats, numCompleted = AchievementsForever.GetCategoryNumAchievements(category);
 
 	local categories = ACHIEVEMENTUI_CATEGORIES;
 	-- clear out table
@@ -944,7 +944,7 @@ function AchievementsFrameComparison_UpdateStats ()
 		totalHeight = totalHeight+headerHeight;
 
 		for i=1, numStats do
-			tinsert(displayStatCategoriesComparison, {id = GetAchievementInfo(category, i)});
+			tinsert(displayStatCategoriesComparison, {id = AchievementsForever.GetAchievementInfo(category, i)});
 			totalHeight = totalHeight+statHeight;
 		end
 		achievementFunctions.lastCategory = category;
@@ -958,9 +958,9 @@ function AchievementsFrameComparison_UpdateStats ()
 		if ( cat.parent == category ) then
 			tinsert(displayStatCategoriesComparison, {id = cat.id, header = true});
 			totalHeight = totalHeight+headerHeight;
-			numStats = GetCategoryNumAchievements(cat.id);
+			numStats = AchievementsForever.GetCategoryNumAchievements(cat.id);
 			for k=1, numStats do
-				tinsert(displayStatCategoriesComparison, {id = GetAchievementInfo(cat.id, k)});
+				tinsert(displayStatCategoriesComparison, {id = AchievementsForever.GetAchievementInfo(cat.id, k)});
 				totalHeight = totalHeight+statHeight;
 			end
 		end
@@ -995,14 +995,14 @@ function AchievementsFrameComparisonStats_SetStat (button, category, index, colo
 	local id, name;
 	if ( not isSummary ) then
 		if ( not index ) then
-			id, name = GetAchievementInfo(category);
+			id, name = AchievementsForever.GetAchievementInfo(category);
 		else
-			id, name = GetAchievementInfo(category, index);
+			id, name = AchievementsForever.GetAchievementInfo(category, index);
 		end
 		
 	else
 		-- This is on the summary page
-		id, name = GetAchievementInfoFromCriteria(category);
+		id, name = AchievementsForever.GetAchievementInfoFromCriteria(category);
 	end
 	
 	button.id = id;
@@ -1029,17 +1029,17 @@ function AchievementsFrameComparisonStats_SetStat (button, category, index, colo
 	end
 	
 	-- Figure out the criteria
-	local numCriteria = GetAchievementNumCriteria(id);
+	local numCriteria = AchievementsForever.GetAchievementNumCriteria(id);
 	if ( numCriteria == 0 ) then
 		-- This is no good!
 	end
 	-- Just show the first criteria for now
 	local criteriaString, criteriaType, completed, quantityNumber, reqQuantity, charName, flags, assetID, quantity, friendQuantity;
 	if ( not isSummary ) then
-		friendQuantity = GetComparisonStatistic(id);
-		quantity = GetStatistic(id);
+		friendQuantity = AchievementsForever.GetComparisonStatistic(id);
+		quantity = AchievementsForever.GetStatistic(id);
 	else
-		criteriaString, criteriaType, completed, quantityNumber, reqQuantity, charName, flags, assetID, quantity = GetAchievementCriteriaInfo(category);
+		criteriaString, criteriaType, completed, quantityNumber, reqQuantity, charName, flags, assetID, quantity = AchievementsForever.GetAchievementCriteriaInfo(category);
 	end
 	if ( not quantity ) then
 		quantity = "--";
@@ -1086,7 +1086,7 @@ function AchievementsFrameComparisonStats_SetHeader(button, id)
 	button.left2:Show();
 	button.middle2:Show();
 	button.right2:Show();
-	button.title:SetText(GetCategoryInfo(id));
+	button.title:SetText(AchievementsForever.GetCategoryInfo(id));
 	button.title:Show();
 	button.friendValue:SetText("");
 	button.value:SetText("");
@@ -1169,7 +1169,7 @@ function AchievementAlertFrame_OnClick(self, button, down)
 	CloseAllWindows();
 	ShowUIPanel(AchievementsFrame);
 
-	local _, _, _, achCompleted = GetAchievementInfo(id);
+	local _, _, _, achCompleted = AchievementsForever.GetAchievementInfo(id);
 	if ( achCompleted and (ACHIEVEMENTUI_SELECTEDFILTER == AchievementsFrameFilters[ACHIEVEMENT_FILTER_INCOMPLETE].func) ) then
 		AchievementFrame_SetFilter(ACHIEVEMENT_FILTER_ALL);
 	elseif ( (not achCompleted) and (ACHIEVEMENTUI_SELECTEDFILTER == AchievementsFrameFilters[ACHIEVEMENT_FILTER_COMPLETE].func) ) then
@@ -1182,7 +1182,7 @@ end
 -- Native deep link used by guild news/rewards (UIParent.lua).
 function OpenAchievementFrameToAchievement(achievementID)
 	if ( not AchievementsFrame ) then
-		AchievementFrame_LoadUI();
+		AchievementsForever.AchievementFrame_LoadUI();
 	end
 	if ( not AchievementsFrame ) then
 		return;

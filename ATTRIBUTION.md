@@ -14,6 +14,6 @@ Achievement names, descriptions, criteria text and icons originate from World of
 
 ## Data sources
 
-- wago.tools, for the DB2 exports the upstream data was generated from.
+- wago.tools, for the DB2 exports the upstream data was generated from, and for the Forever client's own `WorldMapOverlay`, `UiMapXMapArt`, `UiMap` and `AreaTable` exports that `AchievementsForeverData_ForeverMaps.lua` is generated from (`tools/gen-forever-maps.js`).
 - WoWDBDefs, for the table layouts.
 - TrinityCore's DBCEnums.h, for the criteria type and flag enumerations.

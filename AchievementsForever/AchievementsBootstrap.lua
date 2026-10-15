@@ -124,19 +124,11 @@ eventFrame:SetScript("OnEvent", function(_, event, arg1, arg2, arg3, arg4, arg5)
 			Achievements.applyAchievementStatsUIPatch();
 			Achievements.applyAchievementSummaryUIPatch();
 			Achievements.applyAchievementComparisonUIPatch();
-		elseif arg1 == "Blizzard_AchievementUI" then
-			-- This addon bundles its own copy of the achievement UI and never
-			-- loads the native load-on-demand Blizzard_AchievementUI. If another
-			-- addon force-loads it, its globals overwrite our bundled UI and
-			-- break the achievement frame, so warn loudly.
-			local message = "|cffff2020Achievements:|r another addon loaded Blizzard_AchievementUI. This conflicts with the achievement UI bundled by the Achievements addon and will cause errors or a broken achievement window.";
-			local private = Achievements.private;
-			if private and private.PrintMessage then
-				private.PrintMessage(message);
-			elseif DEFAULT_CHAT_FRAME then
-				DEFAULT_CHAT_FRAME:AddMessage(message);
-			end
 		end
+		-- AchievementsForever: Blizzard's load-on-demand Blizzard_AchievementUI
+		-- (the Legacy window) may load at any time. The bundled window's
+		-- globals carry the AF_ prefix (tools/prefix-ui-globals.js), so the two
+		-- coexist and no warning is needed.
 		return;
 	end
 

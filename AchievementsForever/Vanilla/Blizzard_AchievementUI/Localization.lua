@@ -4,23 +4,23 @@ function AchievementsFrameSummary_LocalizeButton (button)
 
 end
 
-function AchievementButton_LocalizeMiniAchievement (frame)
+function AF_AchievementButton_LocalizeMiniAchievement (frame)
 
 end
 
-function AchievementButton_LocalizeProgressBar (frame)
+function AF_AchievementButton_LocalizeProgressBar (frame)
 
 end
 
-function AchievementButton_LocalizeMetaAchievement (frame)
+function AF_AchievementButton_LocalizeMetaAchievement (frame)
 
 end
 
-function AchievementFrame_LocalizeCriteria (frame)
+function AF_AchievementFrame_LocalizeCriteria (frame)
 
 end
 
-function AchievementCategoryButton_Localize(button)
+function AF_AchievementCategoryButton_Localize(button)
 
 end
 
@@ -46,30 +46,30 @@ local l10nTable = {
 				button.shield.points:SetPoint("CENTER", -1, 4);
 			end
 
-			AchievementButton_LocalizeMiniAchievement = function(frame)
+			AF_AchievementButton_LocalizeMiniAchievement = function(frame)
 				frame.points:SetFontObject("GameFontWhite");
 			end
 
-			AchievementButton_LocalizeProgressBar = function(frame)
+			AF_AchievementButton_LocalizeProgressBar = function(frame)
 				frame.text:SetPoint("TOP", 0, 1);
 			end
 
-			AchievementButton_LocalizeMetaAchievement = function(frame)
+			AF_AchievementButton_LocalizeMetaAchievement = function(frame)
 				frame.label:SetFontObject("AchievementFont_Small");
 			end
 
-			AchievementFrame_LocalizeCriteria = function(frame)
+			AF_AchievementFrame_LocalizeCriteria = function(frame)
 				frame.name:SetFontObject("AchievementFont_Small");
 			end
 
-			AchievementButton_Localize = function(button)
+			AF_AchievementButton_Localize = function(button)
 				button.description:SetFontObject("AchievementFont_Small");
 				button.hiddenDescription:SetFontObject("AchievementFont_Small");
 				button.shield:SetPoint("TOPRIGHT", -10, 0);
 			end
 
-			ACHIEVEMENTCOMPARISON_FRIENDSHIELDFONT1 = GameFontBlack;
-			ACHIEVEMENTCOMPARISON_FRIENDSHIELDFONT2 = GameFontBlack;
+			AF_ACHIEVEMENTCOMPARISON_FRIENDSHIELDFONT1 = GameFontBlack;
+			AF_ACHIEVEMENTCOMPARISON_FRIENDSHIELDFONT2 = GameFontBlack;
 
 			AchievementComparisonButton_Localize = function(button)
 				button.player.label:SetPoint("TOP", 0, -4);
@@ -81,7 +81,7 @@ local l10nTable = {
 			end
 
 			for _, button in next, AchievementsFrameAchievementsContainer.buttons do
-				AchievementButton_Localize(button);
+				AF_AchievementButton_Localize(button);
 			end
 
 			for _, button in next, AchievementsFrameComparisonContainer.buttons do

@@ -38,7 +38,7 @@ const dataOut = path.join(repoRoot, 'AchievementsForeverData');
 const runtimeIn = path.join(releaseDir, 'Achievements');
 const dataIn = path.join(releaseDir, 'AchievementsData');
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
 function rmrf(p) { fs.rmSync(p, { recursive: true, force: true }); }
 function mkdirp(p) { fs.mkdirSync(p, { recursive: true }); }

@@ -100,7 +100,7 @@ local function SelectResult(button)
 	end
 	HideResults();
 	searchBox:ClearFocus();
-	AchievementFrame_SelectAchievement(button.achievementID, true);
+	AF_AchievementFrame_SelectAchievement(button.achievementID, true);
 end
 
 local function CreateResultButton(i)

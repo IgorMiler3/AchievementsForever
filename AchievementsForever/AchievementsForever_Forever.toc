@@ -3,7 +3,7 @@
 ## Notes: Retail-style achievements for World of Warcraft: Forever. Fork of Achievements by Deathwing (GPL-3.0).
 ## IconTexture: Interface\AddOns\AchievementsForever\Media\logo.png
 ## Author: Achievements Forever contributors
-## Version: 0.1.0
+## Version: 0.2.0
 ## X-License: GNU GPL3
 ## X-Upstream: https://github.com/Deathwing/Achievements
 ## X-Category: Achievements

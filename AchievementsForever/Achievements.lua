@@ -1065,8 +1065,8 @@ local function RefreshAchievementFrameTracking()
 		AchievementsFrame.trackedAchievements[achievementID] = nil;
 	end
 
-	if AchievementFrame_UpdateTrackedAchievements then
-		AchievementFrame_UpdateTrackedAchievements(Achievements.GetTrackedAchievements());
+	if AF_AchievementFrame_UpdateTrackedAchievements then
+		AF_AchievementFrame_UpdateTrackedAchievements(Achievements.GetTrackedAchievements());
 	else
 		for achievementID in pairs(trackedAchievements) do
 			AchievementsFrame.trackedAchievements[achievementID] = true;
@@ -1088,7 +1088,7 @@ local function NotifyTrackedAchievementsChanged()
 end
 
 local function EnsureAchievementUIForNotification()
-	if AchievementsFrame and AchievementShield_SetPoints then
+	if AchievementsFrame and AF_AchievementShield_SetPoints then
 		return;
 	end
 
@@ -2054,10 +2054,10 @@ function Achievements.OpenComparisonForName(targetName, points, completed, unit,
 	if AchievementsFrameComparison_ForceUpdate then
 		-- Auto-select the first real category so the list isn't empty on open.
 		-- (Summary is always [1]; the first numeric entry is the first real category.)
-		if ACHIEVEMENTUI_CATEGORIES and COMPARISON_ACHIEVEMENT_FUNCTIONS then
-			for _, cat in next, ACHIEVEMENTUI_CATEGORIES do
+		if AF_ACHIEVEMENTUI_CATEGORIES and AF_COMPARISON_ACHIEVEMENT_FUNCTIONS then
+			for _, cat in next, AF_ACHIEVEMENTUI_CATEGORIES do
 				if type(cat.id) == "number" then
-					COMPARISON_ACHIEVEMENT_FUNCTIONS.selectedCategory = cat.id;
+					AF_COMPARISON_ACHIEVEMENT_FUNCTIONS.selectedCategory = cat.id;
 					if AchievementsFrameComparison_UpdateStatusBars then
 						AchievementsFrameComparison_UpdateStatusBars(cat.id);
 					end
@@ -2103,10 +2103,10 @@ function Achievements.RefreshComparisonData(targetName, points, completed, unit,
 		end
 	end
 
-	if AchievementsFrameComparison_UpdateStatusBars and achievementFunctions == COMPARISON_ACHIEVEMENT_FUNCTIONS then
-		local category = achievementFunctions.selectedCategory;
-		if not category or category == "summary" or category == ACHIEVEMENT_COMPARISON_STATS_SUMMARY_ID then
-			category = ACHIEVEMENT_COMPARISON_SUMMARY_ID;
+	if AchievementsFrameComparison_UpdateStatusBars and AF_achievementFunctions == AF_COMPARISON_ACHIEVEMENT_FUNCTIONS then
+		local category = AF_achievementFunctions.selectedCategory;
+		if not category or category == "summary" or category == AF_ACHIEVEMENT_COMPARISON_STATS_SUMMARY_ID then
+			category = AF_ACHIEVEMENT_COMPARISON_SUMMARY_ID;
 		end
 		AchievementsFrameComparison_UpdateStatusBars(category);
 	end

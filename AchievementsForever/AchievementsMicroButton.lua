@@ -444,21 +444,21 @@ local function PatchComparisonShieldButtonFunctions()
 	if achievementComparisonShieldButtonPatched then
 		return;
 	end
-	if not AchievementComparisonPlayerButton_OnLoad and not AchievementComparisonFriendButton_OnLoad then
+	if not AF_AchievementComparisonPlayerButton_OnLoad and not AF_AchievementComparisonFriendButton_OnLoad then
 		return;
 	end
 
-	if AchievementComparisonPlayerButton_OnLoad then
-		local originalPlayerOnLoad = AchievementComparisonPlayerButton_OnLoad;
-		AchievementComparisonPlayerButton_OnLoad = function(button, ...)
+	if AF_AchievementComparisonPlayerButton_OnLoad then
+		local originalPlayerOnLoad = AF_AchievementComparisonPlayerButton_OnLoad;
+		AF_AchievementComparisonPlayerButton_OnLoad = function(button, ...)
 			originalPlayerOnLoad(button, ...);
 			PatchAchievementShieldInstance(button and button.shield, false);
 		end;
 	end
 
-	if AchievementComparisonFriendButton_OnLoad then
-		local originalFriendOnLoad = AchievementComparisonFriendButton_OnLoad;
-		AchievementComparisonFriendButton_OnLoad = function(button, ...)
+	if AF_AchievementComparisonFriendButton_OnLoad then
+		local originalFriendOnLoad = AF_AchievementComparisonFriendButton_OnLoad;
+		AF_AchievementComparisonFriendButton_OnLoad = function(button, ...)
 			originalFriendOnLoad(button, ...);
 			PatchAchievementShieldInstance(button and button.shield, false);
 		end;
@@ -468,8 +468,8 @@ local function PatchComparisonShieldButtonFunctions()
 end
 
 local function ApplyAchievementShieldTexturePatch()
-	if AchievementShield_SetPoints then
-		AchievementShield_SetPoints = function(points, pointString, normalFont, smallFont)
+	if AF_AchievementShield_SetPoints then
+		AF_AchievementShield_SetPoints = function(points, pointString, normalFont, smallFont)
 			points = tonumber(points) or 0;
 			if ( points == 0 ) then
 				pointString:SetText("");
@@ -484,15 +484,15 @@ local function ApplyAchievementShieldTexturePatch()
 		end;
 	end
 
-	AchievementShield_Saturate = SaturateAchievementShield;
-	AchievementShield_Desaturate = DesaturateAchievementShield;
+	AF_AchievementShield_Saturate = SaturateAchievementShield;
+	AF_AchievementShield_Desaturate = DesaturateAchievementShield;
 
 	PatchComparisonShieldDisplayFunction();
 	PatchComparisonShieldButtonFunctions();
 
-	if AchievementShield_OnLoad and not achievementShieldOnLoadPatched then
-		local originalAchievementShieldOnLoad = AchievementShield_OnLoad;
-		AchievementShield_OnLoad = function(self, ...)
+	if AF_AchievementShield_OnLoad and not achievementShieldOnLoadPatched then
+		local originalAchievementShieldOnLoad = AF_AchievementShield_OnLoad;
+		AF_AchievementShield_OnLoad = function(self, ...)
 			originalAchievementShieldOnLoad(self, ...);
 			PatchAchievementShieldInstance(self, false);
 		end;
@@ -538,15 +538,15 @@ local function PatchedAchievementButton_UpdatePlusMinusTexture(button)
 end
 
 local function ApplyAchievementPlusMinusTexturePatch()
-	if not AchievementButton_UpdatePlusMinusTexture then
+	if not AF_AchievementButton_UpdatePlusMinusTexture then
 		return;
 	end
 
-	AchievementButton_UpdatePlusMinusTexture = PatchedAchievementButton_UpdatePlusMinusTexture;
+	AF_AchievementButton_UpdatePlusMinusTexture = PatchedAchievementButton_UpdatePlusMinusTexture;
 	if AchievementsFrameAchievements and AchievementsFrameAchievements.buttons then
 		for _, button in ipairs(AchievementsFrameAchievements.buttons) do
 			if button.plusMinus then
-				AchievementButton_UpdatePlusMinusTexture(button);
+				AF_AchievementButton_UpdatePlusMinusTexture(button);
 			end
 		end
 	end
@@ -558,13 +558,13 @@ local function InvalidateAchievementStatsUICache()
 	statsUIDisplayCache.version = nil;
 	comparisonStatsUIDisplayCache.category = nil;
 	comparisonStatsUIDisplayCache.version = nil;
-	if achievementFunctions then
-		achievementFunctions.lastCategory = nil;
+	if AF_achievementFunctions then
+		AF_achievementFunctions.lastCategory = nil;
 	end
 end
 
 local function PatchedAchievementFrameCategories_GetCategoryList(categories)
-	local cats = achievementFunctions.categoryAccessor();
+	local cats = AF_achievementFunctions.categoryAccessor();
 
 	for i in next, categories do
 		categories[i] = nil;
@@ -618,8 +618,8 @@ local function ApplyAchievementCategoryListPatch()
 
 	AchievementsFrameCategories_GetCategoryList = PatchedAchievementFrameCategories_GetCategoryList;
 
-	if ACHIEVEMENTUI_CATEGORIES and achievementFunctions and achievementFunctions.categoryAccessor then
-		AchievementsFrameCategories_GetCategoryList(ACHIEVEMENTUI_CATEGORIES);
+	if AF_ACHIEVEMENTUI_CATEGORIES and AF_achievementFunctions and AF_achievementFunctions.categoryAccessor then
+		AchievementsFrameCategories_GetCategoryList(AF_ACHIEVEMENTUI_CATEGORIES);
 		InvalidateAchievementStatsUICache();
 		if AchievementsFrameCategories_Update and AchievementsFrameCategoriesContainer and AchievementsFrameCategoriesContainer.buttons then
 			AchievementsFrameCategories_Update();
@@ -652,7 +652,7 @@ end
 
 local function BuildStatsChildrenByParent()
 	local childrenByParent = {};
-	for _, category in ipairs(ACHIEVEMENTUI_CATEGORIES or {}) do
+	for _, category in ipairs(AF_ACHIEVEMENTUI_CATEGORIES or {}) do
 		if type(category.id) == "number" and type(category.parent) == "number" then
 			childrenByParent[category.parent] = childrenByParent[category.parent] or {};
 			tinsert(childrenByParent[category.parent], category.id);
@@ -685,8 +685,8 @@ local function BuildCachedStatsRows(categoryID)
 	AddCategoryRows(categoryID);
 	statsUIDisplayCache.category = categoryID;
 	statsUIDisplayCache.version = statsUICacheVersion;
-	if achievementFunctions then
-		achievementFunctions.lastCategory = categoryID;
+	if AF_achievementFunctions then
+		AF_achievementFunctions.lastCategory = categoryID;
 	end
 	return rows;
 end
@@ -715,14 +715,14 @@ local function DisplayCachedStatistic(button, row, colorIndex)
 end
 
 local function PatchedAchievementFrameStats_Update()
-	if not achievementFunctions or not AchievementsFrameStatsContainer or not AchievementsFrameStatsContainer.buttons then
+	if not AF_achievementFunctions or not AchievementsFrameStatsContainer or not AchievementsFrameStatsContainer.buttons then
 		return;
 	end
 
-	local category = achievementFunctions.selectedCategory;
+	local category = AF_achievementFunctions.selectedCategory;
 	if category == "summary" then
-		category = ACHIEVEMENT_COMPARISON_STATS_SUMMARY_ID;
-		achievementFunctions.selectedCategory = category;
+		category = AF_ACHIEVEMENT_COMPARISON_STATS_SUMMARY_ID;
+		AF_achievementFunctions.selectedCategory = category;
 	end
 	local rows = statsUIDisplayCache.rows;
 	if statsUIDisplayCache.category ~= category or statsUIDisplayCache.version ~= statsUICacheVersion then
@@ -870,14 +870,14 @@ local function DisplayCachedComparisonStatistic(button, row, colorIndex)
 end
 
 local function PatchedAchievementFrameComparison_UpdateStats()
-	if not achievementFunctions or not AchievementsFrameComparisonStatsContainer or not AchievementsFrameComparisonStatsContainer.buttons then
+	if not AF_achievementFunctions or not AchievementsFrameComparisonStatsContainer or not AchievementsFrameComparisonStatsContainer.buttons then
 		return;
 	end
 
-	local category = achievementFunctions.selectedCategory;
+	local category = AF_achievementFunctions.selectedCategory;
 	if category == "summary" then
-		category = ACHIEVEMENT_COMPARISON_STATS_SUMMARY_ID;
-		achievementFunctions.selectedCategory = category;
+		category = AF_ACHIEVEMENT_COMPARISON_STATS_SUMMARY_ID;
+		AF_achievementFunctions.selectedCategory = category;
 	end
 
 	local rows = comparisonStatsUIDisplayCache.rows;
@@ -914,13 +914,13 @@ local function PatchedAchievementFrameComparison_UpdateStats()
 end
 
 local function GetSelectedComparisonAchievementCategory()
-	if not achievementFunctions or achievementFunctions ~= COMPARISON_ACHIEVEMENT_FUNCTIONS then
+	if not AF_achievementFunctions or AF_achievementFunctions ~= AF_COMPARISON_ACHIEVEMENT_FUNCTIONS then
 		return nil;
 	end
 
-	local category = achievementFunctions.selectedCategory;
-	if not category or category == "summary" or category == ACHIEVEMENT_COMPARISON_STATS_SUMMARY_ID then
-		return ACHIEVEMENT_COMPARISON_SUMMARY_ID;
+	local category = AF_achievementFunctions.selectedCategory;
+	if not category or category == "summary" or category == AF_ACHIEVEMENT_COMPARISON_STATS_SUMMARY_ID then
+		return AF_ACHIEVEMENT_COMPARISON_SUMMARY_ID;
 	end
 	return category;
 end
@@ -998,12 +998,12 @@ local function ApplyAchievementCriteriaRefreshUIPatch()
 end
 
 local function ApplyAchievementSummaryStatisticSelectionPatch()
-	if achievementSummaryStatisticSelectionPatched or type(AchievementFrame_SelectSummaryStatistic) ~= "function" then
+	if achievementSummaryStatisticSelectionPatched or type(AF_AchievementFrame_SelectSummaryStatistic) ~= "function" then
 		return;
 	end
 
-	local originalSelectSummaryStatistic = AchievementFrame_SelectSummaryStatistic;
-	AchievementFrame_SelectSummaryStatistic = function(...)
+	local originalSelectSummaryStatistic = AF_AchievementFrame_SelectSummaryStatistic;
+	AF_AchievementFrame_SelectSummaryStatistic = function(...)
 		local ok, result = pcall(originalSelectSummaryStatistic, ...);
 		if not ok then
 			if Private.DebugMessage then
@@ -1026,7 +1026,7 @@ local function DisplaySummaryAchievement(button, achievementID, incompleteToolti
 	points = tonumber(points) or 0;
 	button.label:SetText(name or "");
 	button.description:SetText(description or "");
-	AchievementShield_SetPoints(points, button.shield.points, GameFontNormal, GameFontNormalSmall);
+	AF_AchievementShield_SetPoints(points, button.shield.points, GameFontNormal, GameFontNormalSmall);
 	if ( points > 0 ) then
 		button.shield.icon:SetTexture([[Interface\AchievementFrame\UI-Achievement-Shields]]);
 	else
@@ -1053,12 +1053,12 @@ local function PatchedAchievementFrameSummary_UpdateAchievements(...)
 	local button, anchorTo, achievementID;
 	local defaultAchievementCount = 1;
 
-	for i=1, ACHIEVEMENTUI_MAX_SUMMARY_ACHIEVEMENTS do
+	for i=1, AF_ACHIEVEMENTUI_MAX_SUMMARY_ACHIEVEMENTS do
 		if ( buttons ) then
 			button = buttons[i];
 		end
 		if ( not button ) then
-			button = CreateFrame("Button", "AchievementsFrameSummaryAchievement"..i, AchievementsFrameSummaryAchievements, "SummaryAchievementTemplate");
+			button = CreateFrame("Button", "AchievementsFrameSummaryAchievement"..i, AchievementsFrameSummaryAchievements, "AF_SummaryAchievementTemplate");
 			if ( i == 1 ) then
 				button:SetPoint("TOPLEFT",AchievementsFrameSummaryAchievementsHeader, "BOTTOMLEFT", 18, 2 );
 				button:SetPoint("TOPRIGHT",AchievementsFrameSummaryAchievementsHeader, "BOTTOMRIGHT", -18, 2 );
@@ -1082,8 +1082,8 @@ local function PatchedAchievementFrameSummary_UpdateAchievements(...)
 			end
 		else
 			button:Hide();
-			for j=defaultAchievementCount, ACHIEVEMENTUI_MAX_SUMMARY_ACHIEVEMENTS do
-				achievementID = ACHIEVEMENTUI_DEFAULTSUMMARYACHIEVEMENTS and ACHIEVEMENTUI_DEFAULTSUMMARYACHIEVEMENTS[defaultAchievementCount];
+			for j=defaultAchievementCount, AF_ACHIEVEMENTUI_MAX_SUMMARY_ACHIEVEMENTS do
+				achievementID = AF_ACHIEVEMENTUI_DEFAULTSUMMARYACHIEVEMENTS and AF_ACHIEVEMENTUI_DEFAULTSUMMARYACHIEVEMENTS[defaultAchievementCount];
 				if ( not achievementID ) then
 					break;
 				end
@@ -1101,7 +1101,7 @@ end
 local function PatchedAchievementFrameSummary_Update(isCompare)
 	AchievementsFrameSummaryCategoriesStatusBar_Update();
 	if Achievements.GetSuggestedAchievements then
-		ACHIEVEMENTUI_DEFAULTSUMMARYACHIEVEMENTS = Achievements.GetSuggestedAchievements();
+		AF_ACHIEVEMENTUI_DEFAULTSUMMARYACHIEVEMENTS = Achievements.GetSuggestedAchievements();
 	end
 	AchievementsFrameSummary_UpdateAchievements(AchievementsForever.GetLatestCompletedAchievements());
 end
@@ -1120,7 +1120,7 @@ local function ApplyAchievementSummaryUIPatch()
 end
 
 local function LoadNativeAchievementUI()
-	if IsInCombatLockdown() and not AchievementFrame_ToggleAchievementFrame then
+	if IsInCombatLockdown() and not AF_AchievementFrame_ToggleAchievementFrame then
 		nativeAchievementUILoadReason = "IN_COMBAT_LOCKDOWN";
 		return false, nativeAchievementUILoadReason;
 	end
@@ -1133,7 +1133,7 @@ local function LoadNativeAchievementUI()
 	ApplyAchievementSummaryUIPatch();
 	ApplyAchievementComparisonUIPatch();
 
-	if AchievementFrame_ToggleAchievementFrame then
+	if AF_AchievementFrame_ToggleAchievementFrame then
 		nativeAchievementUILoadReason = nil;
 		return true;
 	end
@@ -1146,7 +1146,7 @@ local function LoadNativeAchievementUI()
 end
 
 function Achievements.AchievementFrame_LoadUI()
-	if IsInCombatLockdown() and not AchievementFrame_ToggleAchievementFrame then
+	if IsInCombatLockdown() and not AF_AchievementFrame_ToggleAchievementFrame then
 		nativeAchievementUILoadReason = "IN_COMBAT_LOCKDOWN";
 		return false, nativeAchievementUILoadReason;
 	end
@@ -1158,7 +1158,7 @@ function Achievements.AchievementFrame_LoadUI()
 	ApplyAchievementStatsUIPatch();
 	ApplyAchievementSummaryUIPatch();
 	ApplyAchievementComparisonUIPatch();
-	if AchievementFrame_ToggleAchievementFrame then
+	if AF_AchievementFrame_ToggleAchievementFrame then
 		return true;
 	end
 
@@ -1180,18 +1180,18 @@ function Achievements.ToggleAchievementFrame(showStats)
 	end
 
 	EnsureAchievementMicroButton();
-	if not AchievementFrame_ToggleAchievementFrame then
+	if not AF_AchievementFrame_ToggleAchievementFrame then
 		Achievements.AchievementFrame_LoadUI();
 	end
 
-	if AchievementFrame_ToggleAchievementFrame then
+	if AF_AchievementFrame_ToggleAchievementFrame then
 		ApplyAchievementShieldTexturePatch();
 		ApplyAchievementPlusMinusTexturePatch();
 		ApplyAchievementCategoryListPatch();
 		ApplyAchievementStatsUIPatch();
 		ApplyAchievementSummaryUIPatch();
 		ApplyAchievementComparisonUIPatch();
-		AchievementFrame_ToggleAchievementFrame(showStats);
+		AF_AchievementFrame_ToggleAchievementFrame(showStats);
 		Achievements.AchievementMicroButton_Update();
 		ApplyAchievementShieldTexturePatch();
 		ApplyAchievementPlusMinusTexturePatch();

@@ -230,6 +230,17 @@ function Resolvers.MergeExploredOverlaysForMap(exploredOverlays, uiMapID, overla
   console.log('exploration geometry fallback added');
 }
 
+// ------------------------------------------------------------------ 5a0. drop the warning about Blizzard_AchievementUI loading (the UI globals are prefixed instead)
+bootstrap = read(bootstrapPath);
+{
+  const warnRe = /\t\telseif arg1 == "Blizzard_AchievementUI" then\n(?:[^\n]*\n)*?\t\tend\n/;
+  if (warnRe.test(bootstrap)) {
+    bootstrap = bootstrap.replace(warnRe, '\t\tend\n\t\t-- AchievementsForever: Blizzard\'s load-on-demand Blizzard_AchievementUI\n\t\t-- (the Legacy window) may load at any time. The bundled window\'s\n\t\t-- globals carry the AF_ prefix (tools/prefix-ui-globals.js), so the two\n\t\t-- coexist and no warning is needed.\n');
+    write(bootstrapPath, bootstrap);
+    console.log('Blizzard_AchievementUI warning removed');
+  }
+}
+
 // ------------------------------------------------------------------ 5a1. export the Forever map keys through Private.data
 const mainPath = path.join(runtime, 'Achievements.lua');
 let main = read(mainPath);
@@ -307,27 +318,17 @@ if (!micro.includes('Never touch it.')) {
 // ------------------------------------------------------------------ tab template keys for the modern PanelTemplates code
 const uiXmlPath = path.join(uiDir, 'Blizzard_AchievementUI.xml');
 let uiXml = read(uiXmlPath);
-if (!uiXml.includes('self.LeftActive = self.LeftDisabled;')) {
-  const anchor = 'self.text = _G[name.."Text"];';
-  if (!uiXml.includes(anchor)) throw new Error('tab template anchor not found');
-  uiXml = uiXml.replace(anchor, anchor + `
-				-- AchievementsForever: the modern PanelTemplates tab code indexes
-				-- these keys instead of looking the textures up by name.
-				self.Left = _G[name.."Left"];
-				self.Middle = _G[name.."Middle"];
-				self.Right = _G[name.."Right"];
-				self.LeftDisabled = _G[name.."LeftDisabled"];
-				self.MiddleDisabled = _G[name.."MiddleDisabled"];
-				self.RightDisabled = _G[name.."RightDisabled"];
-				self.LeftActive = self.LeftDisabled;
-				self.MiddleActive = self.MiddleDisabled;
-				self.RightActive = self.RightDisabled;
-				self.LeftHighlight = self.leftHighlight;
-				self.MiddleHighlight = self.middleHighlight;
-				self.RightHighlight = self.rightHighlight;
-				self.Text = self.text;`);
+if (!uiXml.includes('inherits="PanelTabButtonTemplate"')) {
+  // The Wrath-era tab art and scripts fight the modern PanelTemplates code
+  // (it shows the highlight textures on deselect and expects Left/Middle/Right
+  // keys). Retail's achievement window uses PanelTabButtonTemplate; so do we.
+  const templateRe = /\t<Button name="AchievementsFrameTabButtonTemplate" virtual="true">[\s\S]*?<\/Button>\r?\n(?=\t<Frame name="AchievementsFrameAchievementsObjectives"\/>)/;
+  if (!templateRe.test(uiXml)) throw new Error('tab template block not found');
+  uiXml = uiXml.replace(templateRe, '\t<!-- AchievementsForever: the modern PanelTabButtonTemplate replaces the Wrath-era tab art. The modern PanelTemplates code (SelectTab, DeselectTab, TabResize) is written for it, and retail\'s achievement window uses it too. -->\n\t<Button name="AchievementsFrameTabButtonTemplate" inherits="PanelTabButtonTemplate" virtual="true">\n\t\t<Scripts>\n\t\t\t<OnShow>\n\t\t\t\tPanelTemplates_TabResize(self, 10);\n\t\t\t</OnShow>\n\t\t</Scripts>\n\t</Button>\n');
+  uiXml = uiXml.replace(/^\t*self\.text:SetPoint\("CENTER", self, "CENTER", 0, -5\);\r?\n/gm, '');
+  uiXml = uiXml.replace(/^\t*AchievementsFrameTab[12]\.text:SetPoint\("CENTER", AchievementsFrameTab[12], "CENTER", 0, -3\);\r?\n/gm, '');
   write(uiXmlPath, uiXml);
-  console.log('tab template keys added');
+  console.log('tab template replaced with PanelTabButtonTemplate');
 }
 
 // ------------------------------------------------------------------ slash commands

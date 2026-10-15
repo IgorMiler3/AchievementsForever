@@ -83,8 +83,12 @@ Present and usable: `UIDropDownMenu_*`, `HybridScrollFrame_*`, `FauxScrollFrame_
 
 Upstream registers `LEARNED_SPELL_IN_TAB` inside a `pcall`, so that one is already safe. The port must not register `CHAT_MSG_COMBAT_HOSTILE_DEATH`.
 
+## Second run (probe 0.1.1, same day)
+
+- `COMBAT_LOG_EVENT_UNFILTERED` fired 0 times in open-world combat; registering it is also reported as a protected call. The client fires `UNIT_DIED(guid)` instead (6 seen), with GUIDs in the usual `Creature-0-...-<creatureID>-...` form.
+- The `GameTooltip.SetHyperlink` hook fired on hover of a native achievement link, so native links show a tooltip.
+- `C_ContentTracking`, `C_Bank` and `C_CurrencyInfo.GetCoinTextureString` are present.
+
 ## Still open
 
-- Combat log payload (kill some mobs, then `/afprobe`).
 - Encounter events in a dungeon (first guild run).
-- Link hover and click.

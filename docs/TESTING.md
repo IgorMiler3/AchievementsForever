@@ -36,6 +36,8 @@ First login checklist:
 
 Commands: `/af` opens the window, `/af stats` the statistics, `/af native` lists which achievement API functions Blizzard provides natively, `/af emote` shows whether the emote hook or the chat fallback fired (`/af emote test` records a `/love` against the current target directly), `/af explore` prints what the client reports as explored for the current map and whether the data has matching rows, `/af-debug` toggles verbose output, `/af-clear` wipes the character's progress, `/af-compare <name>`, `/af-title`, `/af-fetch`. The modern client also has `/eventtrace` for watching events live and `/dump <expression>` for inspecting values.
 
+The search box sits left of the filter dropdown in the top-right corner. Two or more letters list up to ten matching achievements; click one, or press Enter for the first, and the window jumps to it. Escape clears the box.
+
 Known at this stage: the micro-button integration is disabled on purpose, the window opens from `/af` or the key binding only. Statistics come from the addon's own counters for now; wiring Blizzard's native statistics in is the next step.
 
 ## What a good report looks like

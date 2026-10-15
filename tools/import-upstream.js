@@ -55,6 +55,13 @@ function read(p) { return fs.readFileSync(p, 'utf8'); }
 function write(p, s) { mkdirp(path.dirname(p)); fs.writeFileSync(p, s, 'utf8'); }
 
 // ---------------------------------------------------------------- 1. runtime
+// Files of our own that live inside the upstream tree and must survive a re-import.
+const KEEP = ['Vanilla/Blizzard_AchievementUI/AchievementsForeverSearch.lua'];
+const kept = {};
+for (const rel of KEEP) {
+  const p = path.join(runtimeOut, ...rel.split('/'));
+  if (fs.existsSync(p)) kept[rel] = read(p);
+}
 rmrf(runtimeOut);
 copyDir(runtimeIn, runtimeOut, (s, e) => {
   const rel = path.relative(runtimeIn, s).replace(/\\/g, '/');
@@ -63,6 +70,8 @@ copyDir(runtimeIn, runtimeOut, (s, e) => {
   if (rel === 'README.md' || rel === 'CHANGELOG.md') return false;  // repo-level docs instead
   return true;
 });
+
+for (const [rel, text] of Object.entries(kept)) write(path.join(runtimeOut, ...rel.split('/')), text);
 
 // ---------------------------------------------------------------- 2. data
 rmrf(dataOut);
@@ -183,6 +192,7 @@ Vanilla\\Blizzard_AchievementUI\\Blizzard_AchievementUI.lua
 Vanilla\\Blizzard_AchievementUI\\Blizzard_AchievementUI_Shared.lua
 Vanilla\\Blizzard_AchievementUI\\Blizzard_AchievementUI.xml
 Vanilla\\Blizzard_AchievementUI\\Localization.lua
+Vanilla\\Blizzard_AchievementUI\\AchievementsForeverSearch.lua
 `);
 
 write(path.join(dataOut, 'AchievementsForeverData_Forever.toc'), `## Interface: 16001

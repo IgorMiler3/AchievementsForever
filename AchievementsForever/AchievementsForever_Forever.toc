@@ -33,3 +33,4 @@ Vanilla\Blizzard_AchievementUI\Blizzard_AchievementUI.lua
 Vanilla\Blizzard_AchievementUI\Blizzard_AchievementUI_Shared.lua
 Vanilla\Blizzard_AchievementUI\Blizzard_AchievementUI.xml
 Vanilla\Blizzard_AchievementUI\Localization.lua
+Vanilla\Blizzard_AchievementUI\AchievementsForeverSearch.lua

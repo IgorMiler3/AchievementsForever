@@ -84,20 +84,51 @@ SlashCmdList["ACHIEVEMENTSFOREVERTOGGLE"] = function(argument)
 	elseif argument == "explore all" then
 		-- Does the client report explored pieces for maps other than the current one?
 		local byArt = (_G.AchievementsForeverData and _G.AchievementsForeverData.foreverUiMapByArtID) or {};
-		local reported, empty = {}, 0;
+		local overlays = (_G.AchievementsForeverData and _G.AchievementsForeverData.worldMapOverlays) or {};
+		local reported, empty, unmatchedLines = {}, 0, {};
 		for _, uiMapID in pairs(byArt) do
 			local ok, textures = pcall(function() return C_MapExplorationInfo.GetExploredMapTextures(uiMapID); end);
 			local count = (ok and textures and #textures) or 0;
 			if count > 0 then
 				local info = C_Map.GetMapInfo and C_Map.GetMapInfo(uiMapID);
-				tinsert(reported, tostring(info and info.name or uiMapID) .. "=" .. count);
+				local name = tostring(info and info.name or uiMapID);
+				local artID = C_Map.GetMapArtID and C_Map.GetMapArtID(uiMapID);
+				local rowsForArt, matched = 0, 0;
+				for _, overlay in pairs(overlays) do
+					if overlay.uiMapArtID == artID then
+						rowsForArt = rowsForArt + 1;
+					end
+				end
+				for _, t in ipairs(textures) do
+					local r = t.hitRect or {};
+					local hit = false;
+					for _, overlay in pairs(overlays) do
+						if t.textureWidth == overlay.textureWidth and t.textureHeight == overlay.textureHeight and t.offsetX == overlay.offsetX and t.offsetY == overlay.offsetY
+							and r.top == overlay.hitRectTop and r.bottom == overlay.hitRectBottom and r.left == overlay.hitRectLeft and r.right == overlay.hitRectRight then
+							hit = true;
+							break;
+						end
+					end
+					if hit then
+						matched = matched + 1;
+					elseif not unmatchedLines[name] then
+						unmatchedLines[name] = name .. " art " .. tostring(artID) .. " piece " .. tostring(t.textureWidth) .. "x" .. tostring(t.textureHeight) .. " at " .. tostring(t.offsetX) .. "," .. tostring(t.offsetY)
+							.. " hit " .. tostring(r.top) .. "/" .. tostring(r.bottom) .. "/" .. tostring(r.left) .. "/" .. tostring(r.right);
+					end
+				end
+				tinsert(reported, name .. "=" .. count .. " reported/" .. matched .. " matched (art " .. tostring(artID) .. ", " .. rowsForArt .. " rows)");
 			else
 				empty = empty + 1;
 			end
 		end
 		table.sort(reported);
 		print(prefix .. "maps with explored pieces: " .. #reported .. ", maps reporting none: " .. empty);
-		print(prefix .. table.concat(reported, ", "));
+		for _, line in ipairs(reported) do
+			print(prefix .. "  " .. line);
+		end
+		for _, line in pairs(unmatchedLines) do
+			print(prefix .. "  unmatched: " .. line);
+		end
 	elseif argument == "explore rescan" then
 		if Achievements.ClearExplorationCache then
 			Achievements.ClearExplorationCache();

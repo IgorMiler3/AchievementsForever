@@ -24,7 +24,7 @@
 --   /afprobe reset      wipe the saved log
 
 local ADDON = ...
-local VERSION = "0.1.0"
+local VERSION = "0.1.1"
 
 AchievementsForeverProbeDB = AchievementsForeverProbeDB or {}
 local db
@@ -144,6 +144,15 @@ local API_CANDIDATES = {
 	"WatchFrame_Update", "QuestWatch_Update", "ObjectiveTrackerFrame", "AchievementFrame", "AchievementsFrame",
 	"AlertFrame", "AchievementAlertSystem", "LegacySystemFrame", "ToggleLegacyChallenges",
 	"EventRegistry", "RegisterAttributeDriver", "InCombatLockdown", "GetServerTime",
+	-- modern replacements for globals the first probe run found missing
+	"C_CurrencyInfo.GetCoinTextureString", "C_Bank.FetchNumPurchasedBankTabs", "C_Bank.FetchPurchasedBankTabData",
+	"C_ContentTracking.StartTracking", "C_ContentTracking.StopTracking", "C_ContentTracking.GetTrackedIDs",
+	"C_PvP.GetHonorRankInfo", "UnitHonorLevel", "C_PvP.GetPvpRank", "GetPVPRankInfo", "GetPVPLastWeekStats",
+	"C_SpellBook.IsSpellKnown", "C_AddOns.GetAddOnInfo", "C_TradeSkillUI.GetAllRecipeIDs", "C_TradeSkillUI.GetRecipeInfo",
+	"GetNumTradeSkills", "GetTradeSkillInfo", "C_Reputation.GetFactionParagonInfo", "C_GossipInfo.GetOptions",
+	"C_LFGInfo.GetDungeonInfo", "C_EncounterJournal.GetEncountersOnMap", "EJ_GetEncounterInfo",
+	"C_PlayerInfo.GetPlayerCharacterData", "C_GameRules.IsHardcoreActive", "C_GameRules.GetForeverExperiencePreset",
+	"UnitIsTapDenied", "UnitIsDead", "UnitHealth", "issecretvalue", "canaccessvalue", "secretvalue",
 }
 
 local TEXTURE_CANDIDATES = {
@@ -226,7 +235,7 @@ local function scanAchievements()
 				result.statisticCategories[#result.statisticCategories + 1] = string.format("%s id=%s parent=%s total=%s",
 					okInfo and safeToString(name) or "?", tostring(categoryID), okInfo and safeToString(parent) or "?", okNum and safeToString(total) or "?")
 				if okNum and type(total) == "number" then
-					for index = 1, math.min(total, 60) do
+					for index = 1, math.min(total, 250) do
 						local okA, id, name2 = pcall(GetAchievementInfo, categoryID, index)
 						if okA and id then
 							local okS, quantity = pcall(GetStatistic, id)
@@ -266,19 +275,39 @@ local function postTestLink()
 	end
 end
 
+local function recordLinkEvent(kind, link)
+	db.linkClicks = db.linkClicks or {}
+	table.insert(db.linkClicks, stamp() .. " " .. kind .. " " .. safeToString(link))
+	print_(kind .. " received an achievement link: " .. safeToString(link))
+end
+
 local function hookLinks()
-	if type(hooksecurefunc) ~= "function" or type(SetItemRef) ~= "function" then
-		db.linkHook = "SetItemRef or hooksecurefunc missing"
+	if type(hooksecurefunc) ~= "function" then
+		db.linkHook = "hooksecurefunc missing"
 		return
 	end
-	hooksecurefunc("SetItemRef", function(link, text, button)
-		if type(link) == "string" and link:find("^achievement:") then
-			db.linkClicks = db.linkClicks or {}
-			table.insert(db.linkClicks, stamp() .. " " .. safeToString(link))
-			print_("SetItemRef received an achievement link click: " .. safeToString(link))
+	local installed = {}
+	if type(SetItemRef) == "function" then
+		hooksecurefunc("SetItemRef", function(link)
+			if type(link) == "string" and link:find("^achievement:") then
+				recordLinkEvent("SetItemRef", link)
+			end
+		end)
+		installed[#installed + 1] = "SetItemRef"
+	end
+	-- Hovering a chat link sets it on GameTooltip; clicking sets it on ItemRefTooltip.
+	for _, name in ipairs({ "GameTooltip", "ItemRefTooltip" }) do
+		local tooltip = _G[name]
+		if tooltip and type(tooltip.SetHyperlink) == "function" then
+			hooksecurefunc(tooltip, "SetHyperlink", function(_, link)
+				if type(link) == "string" and link:find("achievement:") then
+					recordLinkEvent(name .. ".SetHyperlink", link)
+				end
+			end)
+			installed[#installed + 1] = name
 		end
-	end)
-	db.linkHook = "installed"
+	end
+	db.linkHook = #installed > 0 and ("installed: " .. table.concat(installed, ", ")) or "nothing to hook"
 end
 
 -- ------------------------------------------------------------ events
@@ -336,10 +365,22 @@ frame:SetScript("OnEvent", function(_, event, ...)
 
 	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
 		db.cleuFired = (db.cleuFired or 0) + 1
-		if cleuSamples < 5 and type(CombatLogGetCurrentEventInfo) == "function" then
+		if cleuSamples < 8 then
 			cleuSamples = cleuSamples + 1
-			local ok, ts, subevent, _, sourceGUID, sourceName, _, _, destGUID, destName = pcall(CombatLogGetCurrentEventInfo)
-			logEvent("CLEU_SAMPLE", ok and subevent or ("error " .. safeToString(ts)), ok and sourceName or "", ok and destName or "", ok and destGUID or "")
+			if type(CombatLogGetCurrentEventInfo) == "function" then
+				local ok, ts, subevent, _, sourceGUID, sourceName, _, _, destGUID, destName = pcall(CombatLogGetCurrentEventInfo)
+				logEvent("CLEU_SAMPLE", ok and subevent or ("error " .. safeToString(ts)), ok and sourceName or "", ok and destName or "", ok and destGUID or "")
+			else
+				-- The payload reader is missing on this client. Record how many
+				-- arguments the event itself carried and the first dozen of them,
+				-- so we learn whether the payload is passed directly instead.
+				local n = select("#", ...)
+				local parts = { "argc=" .. tostring(n) }
+				for i = 1, math.min(n, 12) do
+					parts[#parts + 1] = safeToString((select(i, ...)))
+				end
+				logEvent("CLEU_ARGS", unpack(parts))
+			end
 		end
 		return
 	end
@@ -376,7 +417,8 @@ local function summary()
 	local stats = db.achievements and db.achievements.statistics or {}
 	local nonZero = 0
 	for _, line in ipairs(stats) do
-		if not line:find("value=0$") and not line:find("value=nil") and not line:find("value=error") then
+		local value = line:match("value=(.*)$") or ""
+		if value ~= "" and value ~= "0" and value ~= "--" and value ~= "nil" and value ~= "error" then
 			nonZero = nonZero + 1
 		end
 	end

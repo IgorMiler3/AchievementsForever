@@ -68,6 +68,12 @@ node tools/check-lua.js
 
 Node 18 or newer is required; `check-lua.js` needs `npm install --no-save luaparse` once.
 
+To hand the addon to someone, build the zip and send that file. It contains only the two addon folders, ready to extract into `Interface\AddOns`:
+
+```
+powershell -ExecutionPolicy Bypass -File tools\package.ps1
+```
+
 ## Licence
 
 GNU General Public License v3.0. See [LICENSE](LICENSE) and [ATTRIBUTION.md](ATTRIBUTION.md). Achievement names, descriptions and icons are Blizzard Entertainment's.

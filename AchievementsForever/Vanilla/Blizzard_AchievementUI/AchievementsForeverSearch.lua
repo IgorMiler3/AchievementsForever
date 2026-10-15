@@ -185,9 +185,16 @@ end
 local function CreateSearchUI()
 	searchBox = CreateFrame("EditBox", "AchievementsFrameSearchBox", AchievementsFrame, "SearchBoxTemplate");
 	searchBox:SetSize(170, 20);
-	searchBox:SetPoint("RIGHT", AchievementsFrameFilterDropdown, "LEFT", -8, 0);
+	-- The filter dropdown sits at TOPRIGHT (-98, 10) and is 118 wide, but it is
+	-- hidden on the summary page, so anchor to the window itself and leave room.
+	searchBox:SetPoint("TOPRIGHT", AchievementsFrame, "TOPRIGHT", -226, 10);
 	searchBox:SetFrameLevel(AchievementsFrameFilterDropdown:GetFrameLevel() + 1);
 	searchBox:SetAutoFocus(false);
+	-- opaque background behind the template's translucent border art
+	local bg = searchBox:CreateTexture(nil, "BACKGROUND", nil, -1);
+	bg:SetPoint("TOPLEFT", -4, 2);
+	bg:SetPoint("BOTTOMRIGHT", 2, -2);
+	bg:SetColorTexture(0.05, 0.04, 0.03, 0.95);
 	if searchBox.Instructions then
 		searchBox.Instructions:SetText(Localized(SEARCH_INSTRUCTIONS));
 	end

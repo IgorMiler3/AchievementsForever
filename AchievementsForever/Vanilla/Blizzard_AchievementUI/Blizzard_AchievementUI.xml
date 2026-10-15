@@ -308,6 +308,21 @@
 				self.middleHighlight = _G[name.."MiddleHighlight"];
 				self.rightHighlight = _G[name.."RightHighlight"];
 				self.text = _G[name.."Text"];
+				-- AchievementsForever: the modern PanelTemplates tab code indexes
+				-- these keys instead of looking the textures up by name.
+				self.Left = _G[name.."Left"];
+				self.Middle = _G[name.."Middle"];
+				self.Right = _G[name.."Right"];
+				self.LeftDisabled = _G[name.."LeftDisabled"];
+				self.MiddleDisabled = _G[name.."MiddleDisabled"];
+				self.RightDisabled = _G[name.."RightDisabled"];
+				self.LeftActive = self.LeftDisabled;
+				self.MiddleActive = self.MiddleDisabled;
+				self.RightActive = self.RightDisabled;
+				self.LeftHighlight = self.leftHighlight;
+				self.MiddleHighlight = self.middleHighlight;
+				self.RightHighlight = self.rightHighlight;
+				self.Text = self.text;
 			</OnLoad>
 			<OnEnter>
 				self.leftHighlight:Show();

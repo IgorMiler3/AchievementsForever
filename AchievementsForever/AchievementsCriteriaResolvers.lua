@@ -8170,16 +8170,17 @@ Achievements.RegisterQuestSortQuests = Resolvers.RegisterQuestSortQuests;
 -- leaving it, is treated as a kill by the player's group. Kill criteria that
 -- need more than that (killing blows, player kills) stay on the native
 -- statistics instead.
-do -- scoped: this chunk is at Lua's 200-local limit
-local unitDiedLastCombatAt = 0;
-local unitDiedCombatFrame = CreateFrame("Frame");
-pcall(unitDiedCombatFrame.RegisterEvent, unitDiedCombatFrame, "PLAYER_REGEN_DISABLED");
-pcall(unitDiedCombatFrame.RegisterEvent, unitDiedCombatFrame, "PLAYER_REGEN_ENABLED");
-unitDiedCombatFrame:SetScript("OnEvent", function()
-	unitDiedLastCombatAt = GetTime();
+-- No new chunk-level locals here: this chunk already has 199 and Lua stops
+-- compiling at 200, so everything hangs off the Resolvers table instead.
+Resolvers.unitDiedLastCombatAt = 0;
+Resolvers.unitDiedCombatFrame = CreateFrame("Frame");
+pcall(Resolvers.unitDiedCombatFrame.RegisterEvent, Resolvers.unitDiedCombatFrame, "PLAYER_REGEN_DISABLED");
+pcall(Resolvers.unitDiedCombatFrame.RegisterEvent, Resolvers.unitDiedCombatFrame, "PLAYER_REGEN_ENABLED");
+Resolvers.unitDiedCombatFrame:SetScript("OnEvent", function()
+	Resolvers.unitDiedLastCombatAt = GetTime();
 end);
 
-local function HandleUnitDiedEvent(destGUID)
+function Resolvers.HandleUnitDiedEvent(destGUID)
 	if type(destGUID) ~= "string" or destGUID == "" then
 		return false;
 	end
@@ -8187,7 +8188,7 @@ local function HandleUnitDiedEvent(destGUID)
 	if unitType ~= "Creature" and unitType ~= "Vehicle" then
 		return false;
 	end
-	local inCombat = (UnitAffectingCombat and UnitAffectingCombat("player")) or (GetTime() - unitDiedLastCombatAt) < 4;
+	local inCombat = (UnitAffectingCombat and UnitAffectingCombat("player")) or (GetTime() - Resolvers.unitDiedLastCombatAt) < 4;
 	if not inCombat then
 		return false;
 	end
@@ -8228,8 +8229,7 @@ local function HandleUnitDiedEvent(destGUID)
 	end
 	return recorded;
 end
-Achievements.HandleUnitDiedEvent = HandleUnitDiedEvent;
-end
+Achievements.HandleUnitDiedEvent = Resolvers.HandleUnitDiedEvent;
 
 Achievements.HandleCombatLogCriteria = HandleCombatLogCriteria;
 Achievements.RecordUsedItem = RecordUsedItemID;

@@ -105,16 +105,17 @@ if (!resolvers.includes('HandleUnitDiedEvent')) {
 -- leaving it, is treated as a kill by the player's group. Kill criteria that
 -- need more than that (killing blows, player kills) stay on the native
 -- statistics instead.
-do -- scoped: this chunk is at Lua's 200-local limit
-local unitDiedLastCombatAt = 0;
-local unitDiedCombatFrame = CreateFrame("Frame");
-pcall(unitDiedCombatFrame.RegisterEvent, unitDiedCombatFrame, "PLAYER_REGEN_DISABLED");
-pcall(unitDiedCombatFrame.RegisterEvent, unitDiedCombatFrame, "PLAYER_REGEN_ENABLED");
-unitDiedCombatFrame:SetScript("OnEvent", function()
-	unitDiedLastCombatAt = GetTime();
+-- No new chunk-level locals here: this chunk already has 199 and Lua stops
+-- compiling at 200, so everything hangs off the Resolvers table instead.
+Resolvers.unitDiedLastCombatAt = 0;
+Resolvers.unitDiedCombatFrame = CreateFrame("Frame");
+pcall(Resolvers.unitDiedCombatFrame.RegisterEvent, Resolvers.unitDiedCombatFrame, "PLAYER_REGEN_DISABLED");
+pcall(Resolvers.unitDiedCombatFrame.RegisterEvent, Resolvers.unitDiedCombatFrame, "PLAYER_REGEN_ENABLED");
+Resolvers.unitDiedCombatFrame:SetScript("OnEvent", function()
+	Resolvers.unitDiedLastCombatAt = GetTime();
 end);
 
-local function HandleUnitDiedEvent(destGUID)
+function Resolvers.HandleUnitDiedEvent(destGUID)
 	if type(destGUID) ~= "string" or destGUID == "" then
 		return false;
 	end
@@ -122,7 +123,7 @@ local function HandleUnitDiedEvent(destGUID)
 	if unitType ~= "Creature" and unitType ~= "Vehicle" then
 		return false;
 	end
-	local inCombat = (UnitAffectingCombat and UnitAffectingCombat("player")) or (GetTime() - unitDiedLastCombatAt) < 4;
+	local inCombat = (UnitAffectingCombat and UnitAffectingCombat("player")) or (GetTime() - Resolvers.unitDiedLastCombatAt) < 4;
 	if not inCombat then
 		return false;
 	end
@@ -163,8 +164,7 @@ local function HandleUnitDiedEvent(destGUID)
 	end
 	return recorded;
 end
-Achievements.HandleUnitDiedEvent = HandleUnitDiedEvent;
-end
+Achievements.HandleUnitDiedEvent = Resolvers.HandleUnitDiedEvent;
 
 `;
   resolvers = resolvers.replace(anchor, killPath + anchor);
@@ -202,6 +202,32 @@ if (!micro.includes('Never touch it.')) {
   if (!micro.includes('Never touch it.')) throw new Error('micro-button patch failed');
   write(microPath, micro);
   console.log('micro-button paths neutralised');
+}
+
+// ------------------------------------------------------------------ tab template keys for the modern PanelTemplates code
+const uiXmlPath = path.join(uiDir, 'Blizzard_AchievementUI.xml');
+let uiXml = read(uiXmlPath);
+if (!uiXml.includes('self.LeftActive = self.LeftDisabled;')) {
+  const anchor = 'self.text = _G[name.."Text"];';
+  if (!uiXml.includes(anchor)) throw new Error('tab template anchor not found');
+  uiXml = uiXml.replace(anchor, anchor + `
+				-- AchievementsForever: the modern PanelTemplates tab code indexes
+				-- these keys instead of looking the textures up by name.
+				self.Left = _G[name.."Left"];
+				self.Middle = _G[name.."Middle"];
+				self.Right = _G[name.."Right"];
+				self.LeftDisabled = _G[name.."LeftDisabled"];
+				self.MiddleDisabled = _G[name.."MiddleDisabled"];
+				self.RightDisabled = _G[name.."RightDisabled"];
+				self.LeftActive = self.LeftDisabled;
+				self.MiddleActive = self.MiddleDisabled;
+				self.RightActive = self.RightDisabled;
+				self.LeftHighlight = self.leftHighlight;
+				self.MiddleHighlight = self.middleHighlight;
+				self.RightHighlight = self.rightHighlight;
+				self.Text = self.text;`);
+  write(uiXmlPath, uiXml);
+  console.log('tab template keys added');
 }
 
 // ------------------------------------------------------------------ slash commands

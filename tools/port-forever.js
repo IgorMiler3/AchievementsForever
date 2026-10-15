@@ -190,8 +190,55 @@ if (!bootstrap.includes(PORT_MARK)) {
     '\tif event == "COMBAT_LOG_EVENT_UNFILTERED" then',
     '\tif event == "UNIT_DIED" then\n\t\tif Achievements.HandleUnitDiedEvent then\n\t\t\tAchievements.HandleUnitDiedEvent(arg1);\n\t\tend\n\t\treturn;\n\tend\n\n\tif event == "COMBAT_LOG_EVENT_UNFILTERED" then'
   );
+  // self text emotes: Forever's chat path does not reliably reach the global DoEmote hook
+  const emoteBlock = /\tif event == "CHAT_MSG_TEXT_EMOTE" then\n(?:\t\t--[^\n]*\n)*\t\treturn;\n\tend/;
+  if (!emoteBlock.test(bootstrap)) throw new Error('CHAT_MSG_TEXT_EMOTE block not found');
+  bootstrap = bootstrap.replace(emoteBlock,
+    '\tif event == "CHAT_MSG_TEXT_EMOTE" then\n\t\t-- AchievementsForever: Forever\'s chat code does not reliably reach the\n\t\t-- global DoEmote that upstream hooks, so the player\'s own emote text is\n\t\t-- parsed as a fallback (see AchievementsForeverOverrides.lua).\n\t\tif Achievements.RecordTextEmoteFallback then\n\t\t\tAchievements.RecordTextEmoteFallback(arg1, arg2);\n\t\tend\n\t\treturn;\n\tend');
   write(bootstrapPath, bootstrap);
-  console.log('bootstrap events guarded, UNIT_DIED dispatched');
+  console.log('bootstrap events guarded, UNIT_DIED dispatched, text emote fallback dispatched');
+}
+
+// ------------------------------------------------------------------ 5a. exploration: geometry-only fallback when the art ID is unknown
+resolvers = read(resolversPath);
+if (!resolvers.includes('Resolvers.GetAllWorldMapOverlayList')) {
+  const mergeOld = 'function Resolvers.MergeExploredOverlaysForMap(exploredOverlays, uiMapID, overlaysByArtID)\n\tlocal uiMapArtID = C_Map.GetMapArtID(uiMapID);\n\tlocal overlays = uiMapArtID and overlaysByArtID[uiMapArtID] or nil;\n\tif not overlays then\n\t\treturn false;\n\tend';
+  if (!resolvers.includes(mergeOld)) throw new Error('MergeExploredOverlaysForMap block not found');
+  resolvers = resolvers.replace(mergeOld, `-- AchievementsForever: the Forever client may assign different map-art IDs
+-- than the 3.4.5 data this addon ships, so when no overlay rows exist for the
+-- reported art ID, fall back to matching the explored texture geometry against
+-- every overlay row. All eight geometry values have to agree, so false
+-- positives are unlikely.
+function Resolvers.GetAllWorldMapOverlayList()
+	if not Resolvers.allWorldMapOverlayList then
+		Resolvers.allWorldMapOverlayList = {};
+		for _, overlay in pairs(worldMapOverlays) do
+			tinsert(Resolvers.allWorldMapOverlayList, overlay);
+		end
+	end
+	return Resolvers.allWorldMapOverlayList;
+end
+
+function Resolvers.MergeExploredOverlaysForMap(exploredOverlays, uiMapID, overlaysByArtID)
+	local uiMapArtID = C_Map.GetMapArtID(uiMapID);
+	local overlays = uiMapArtID and overlaysByArtID[uiMapArtID] or nil;
+	if not overlays then
+		overlays = Resolvers.GetAllWorldMapOverlayList();
+		Resolvers.exploredOverlayGeometryFallbackUsed = true;
+	end`);
+  write(resolversPath, resolvers);
+  console.log('exploration geometry fallback added');
+}
+
+// ------------------------------------------------------------------ 5b. instrument the DoEmote hook so the fallback can defer to it
+resolvers = read(resolversPath);
+if (!resolvers.includes('Resolvers.emoteHookInstalled')) {
+  const hookOld = '\temoteHooksInstalled = true;\n\tResolvers.HookGlobalFunction("DoEmote", function(emoteToken, emoteTarget)\n\t\tRecordEmoteCriteria(emoteToken, emoteTarget);\n\tend);';
+  if (!resolvers.includes(hookOld)) throw new Error('DoEmote hook block not found');
+  resolvers = resolvers.replace(hookOld,
+    '\temoteHooksInstalled = true;\n\t-- AchievementsForever: record whether and when the hook fires so the\n\t-- CHAT_MSG_TEXT_EMOTE fallback in the overrides file can stay out of its way.\n\tResolvers.emoteHookInstalled = Resolvers.HookGlobalFunction("DoEmote", function(emoteToken, emoteTarget)\n\t\tResolvers.lastEmoteHookAt = GetTime();\n\t\tResolvers.emoteHookCount = (Resolvers.emoteHookCount or 0) + 1;\n\t\tResolvers.lastEmoteHookToken = emoteToken;\n\t\tRecordEmoteCriteria(emoteToken, emoteTarget);\n\tend);');
+  write(resolversPath, resolvers);
+  console.log('DoEmote hook instrumented');
 }
 
 // ------------------------------------------------------------------ 4. micro-button code paths called directly (not via the namespace)
@@ -563,15 +610,104 @@ Achievements.ensureAchievementMicroButton = function() return nil; end
 Achievements.hookUpdateMicroButtons = function() end
 Achievements.AchievementMicroButton_Update = function() end
 
+-- Forever's chat code does not always reach the global DoEmote that upstream
+-- hooks, so the player's own text emotes are also picked up from
+-- CHAT_MSG_TEXT_EMOTE. English verbs only for now; the DoEmote hook stays the
+-- primary path and wins whenever it fired for the same emote.
+local TEXT_EMOTE_VERBS = {
+	{ "roll on the floor", "ROFL" },
+	{ "guffaw", "GUFFAW" },
+	{ "violin", "VIOLIN" },
+	{ "facepalm", "FACEPALM" },
+	{ "chuckle", "CHUCKLE" },
+	{ "giggle", "GIGGLE" },
+	{ "laugh", "LAUGH" },
+	{ "cheer", "CHEER" },
+	{ "wave", "WAVE" },
+	{ "kiss", "KISS" },
+	{ "hug", "HUG" },
+	{ "love", "LOVE" },
+};
+
+Achievements.textEmoteFallbackCount = 0;
+
+function Achievements.RecordTextEmoteFallback(message, sender)
+	if type(message) ~= "string" or not Achievements.RecordEmoteCriteria then
+		return false;
+	end
+	local resolvers = Achievements.criteriaResolvers;
+	if resolvers and resolvers.lastEmoteHookAt and GetTime() - resolvers.lastEmoteHookAt < 1 then
+		return false; -- the DoEmote hook already handled this emote
+	end
+	if type(sender) == "string" and sender ~= "" and Ambiguate and Ambiguate(sender, "none") ~= UnitName("player") then
+		return false;
+	end
+	if string.sub(message, 1, 4) ~= "You " then
+		return false;
+	end
+	local lowered = string.lower(message);
+	for _, entry in ipairs(TEXT_EMOTE_VERBS) do
+		if string.find(lowered, entry[1], 1, true) then
+			Achievements.textEmoteFallbackCount = Achievements.textEmoteFallbackCount + 1;
+			Achievements.lastTextEmoteFallback = entry[2];
+			return Achievements.RecordEmoteCriteria(entry[2]);
+		end
+	end
+	return false;
+end
+
 SLASH_ACHIEVEMENTSFOREVERTOGGLE1 = "/af";
 SLASH_ACHIEVEMENTSFOREVERTOGGLE2 = "/achievementsforever";
 SlashCmdList["ACHIEVEMENTSFOREVERTOGGLE"] = function(argument)
 	argument = string.lower(string.trim(argument or ""));
+	local prefix = "|cff33ccffAchievements Forever|r ";
 	if argument == "stats" or argument == "statistics" then
 		Achievements.ToggleAchievementFrame(true);
 	elseif argument == "native" then
 		local names = _G.AchievementsForeverNativeAPI or {};
-		print("|cff33ccffAchievements Forever|r native API globals left untouched: " .. tostring(#names));
+		print(prefix .. "native API globals left untouched: " .. tostring(#names));
+	elseif argument == "emote" or argument == "emote test" then
+		local resolvers = Achievements.criteriaResolvers or {};
+		print(prefix .. "DoEmote global: " .. type(_G.DoEmote)
+			.. ", hook installed: " .. tostring(resolvers.emoteHookInstalled)
+			.. ", hook fired: " .. tostring(resolvers.emoteHookCount or 0) .. " (last " .. tostring(resolvers.lastEmoteHookToken) .. ")"
+			.. ", chat fallback fired: " .. tostring(Achievements.textEmoteFallbackCount or 0) .. " (last " .. tostring(Achievements.lastTextEmoteFallback) .. ")");
+		if argument == "emote test" then
+			local recorded = Achievements.RecordEmoteCriteria("LOVE");
+			print(prefix .. "direct LOVE test against target " .. tostring(UnitName("target")) .. ": recorded = " .. tostring(recorded));
+		end
+	elseif argument == "explore" then
+		local uiMapID = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player");
+		local artID = uiMapID and C_Map.GetMapArtID and C_Map.GetMapArtID(uiMapID);
+		local info = uiMapID and C_Map.GetMapInfo and C_Map.GetMapInfo(uiMapID);
+		local overlays = (_G.AchievementsForeverData and _G.AchievementsForeverData.worldMapOverlays) or {};
+		local rowsForArt = 0;
+		for _, overlay in pairs(overlays) do
+			if overlay.uiMapArtID == artID then
+				rowsForArt = rowsForArt + 1;
+			end
+		end
+		local ok, explored = pcall(function() return C_MapExplorationInfo.GetExploredMapTextures(uiMapID); end);
+		explored = (ok and explored) or {};
+		local resolvers = Achievements.criteriaResolvers or {};
+		print(prefix .. "map " .. tostring(uiMapID) .. " (" .. tostring(info and info.name) .. "), art " .. tostring(artID)
+			.. ", overlay rows in our data for this art: " .. rowsForArt
+			.. ", explored textures from client: " .. tostring(#explored)
+			.. ", geometry fallback used: " .. tostring(resolvers.exploredOverlayGeometryFallbackUsed == true));
+		for i = 1, math.min(#explored, 4) do
+			local t = explored[i];
+			local r = t.hitRect or {};
+			local matched = "no row matches";
+			for _, overlay in pairs(overlays) do
+				if t.textureWidth == overlay.textureWidth and t.textureHeight == overlay.textureHeight and t.offsetX == overlay.offsetX and t.offsetY == overlay.offsetY
+					and r.top == overlay.hitRectTop and r.bottom == overlay.hitRectBottom and r.left == overlay.hitRectLeft and r.right == overlay.hitRectRight then
+					matched = "matches overlay " .. tostring(overlay.id) .. " (art " .. tostring(overlay.uiMapArtID) .. ")";
+					break;
+				end
+			end
+			print(prefix .. "  texture " .. i .. ": " .. tostring(t.textureWidth) .. "x" .. tostring(t.textureHeight) .. " at " .. tostring(t.offsetX) .. "," .. tostring(t.offsetY)
+				.. " hit " .. tostring(r.top) .. "/" .. tostring(r.bottom) .. "/" .. tostring(r.left) .. "/" .. tostring(r.right) .. " -> " .. matched);
+		end
 	else
 		Achievements.ToggleAchievementFrame(false);
 	end

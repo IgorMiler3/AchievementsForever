@@ -198,9 +198,12 @@ eventFrame:SetScript("OnEvent", function(_, event, arg1, arg2, arg3, arg4, arg5)
 	end
 
 	if event == "CHAT_MSG_TEXT_EMOTE" then
-		-- Incoming text emote chat doesn't carry the original token, so we
-		-- only re-fire the gated path when the local player has a target.
-		-- Self-issued /emote commands are already covered by the DoEmote hook.
+		-- AchievementsForever: Forever's chat code does not reliably reach the
+		-- global DoEmote that upstream hooks, so the player's own emote text is
+		-- parsed as a fallback (see AchievementsForeverOverrides.lua).
+		if Achievements.RecordTextEmoteFallback then
+			Achievements.RecordTextEmoteFallback(arg1, arg2);
+		end
 		return;
 	end
 

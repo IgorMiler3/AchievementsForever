@@ -15,15 +15,104 @@ Achievements.ensureAchievementMicroButton = function() return nil; end
 Achievements.hookUpdateMicroButtons = function() end
 Achievements.AchievementMicroButton_Update = function() end
 
+-- Forever's chat code does not always reach the global DoEmote that upstream
+-- hooks, so the player's own text emotes are also picked up from
+-- CHAT_MSG_TEXT_EMOTE. English verbs only for now; the DoEmote hook stays the
+-- primary path and wins whenever it fired for the same emote.
+local TEXT_EMOTE_VERBS = {
+	{ "roll on the floor", "ROFL" },
+	{ "guffaw", "GUFFAW" },
+	{ "violin", "VIOLIN" },
+	{ "facepalm", "FACEPALM" },
+	{ "chuckle", "CHUCKLE" },
+	{ "giggle", "GIGGLE" },
+	{ "laugh", "LAUGH" },
+	{ "cheer", "CHEER" },
+	{ "wave", "WAVE" },
+	{ "kiss", "KISS" },
+	{ "hug", "HUG" },
+	{ "love", "LOVE" },
+};
+
+Achievements.textEmoteFallbackCount = 0;
+
+function Achievements.RecordTextEmoteFallback(message, sender)
+	if type(message) ~= "string" or not Achievements.RecordEmoteCriteria then
+		return false;
+	end
+	local resolvers = Achievements.criteriaResolvers;
+	if resolvers and resolvers.lastEmoteHookAt and GetTime() - resolvers.lastEmoteHookAt < 1 then
+		return false; -- the DoEmote hook already handled this emote
+	end
+	if type(sender) == "string" and sender ~= "" and Ambiguate and Ambiguate(sender, "none") ~= UnitName("player") then
+		return false;
+	end
+	if string.sub(message, 1, 4) ~= "You " then
+		return false;
+	end
+	local lowered = string.lower(message);
+	for _, entry in ipairs(TEXT_EMOTE_VERBS) do
+		if string.find(lowered, entry[1], 1, true) then
+			Achievements.textEmoteFallbackCount = Achievements.textEmoteFallbackCount + 1;
+			Achievements.lastTextEmoteFallback = entry[2];
+			return Achievements.RecordEmoteCriteria(entry[2]);
+		end
+	end
+	return false;
+end
+
 SLASH_ACHIEVEMENTSFOREVERTOGGLE1 = "/af";
 SLASH_ACHIEVEMENTSFOREVERTOGGLE2 = "/achievementsforever";
 SlashCmdList["ACHIEVEMENTSFOREVERTOGGLE"] = function(argument)
 	argument = string.lower(string.trim(argument or ""));
+	local prefix = "|cff33ccffAchievements Forever|r ";
 	if argument == "stats" or argument == "statistics" then
 		Achievements.ToggleAchievementFrame(true);
 	elseif argument == "native" then
 		local names = _G.AchievementsForeverNativeAPI or {};
-		print("|cff33ccffAchievements Forever|r native API globals left untouched: " .. tostring(#names));
+		print(prefix .. "native API globals left untouched: " .. tostring(#names));
+	elseif argument == "emote" or argument == "emote test" then
+		local resolvers = Achievements.criteriaResolvers or {};
+		print(prefix .. "DoEmote global: " .. type(_G.DoEmote)
+			.. ", hook installed: " .. tostring(resolvers.emoteHookInstalled)
+			.. ", hook fired: " .. tostring(resolvers.emoteHookCount or 0) .. " (last " .. tostring(resolvers.lastEmoteHookToken) .. ")"
+			.. ", chat fallback fired: " .. tostring(Achievements.textEmoteFallbackCount or 0) .. " (last " .. tostring(Achievements.lastTextEmoteFallback) .. ")");
+		if argument == "emote test" then
+			local recorded = Achievements.RecordEmoteCriteria("LOVE");
+			print(prefix .. "direct LOVE test against target " .. tostring(UnitName("target")) .. ": recorded = " .. tostring(recorded));
+		end
+	elseif argument == "explore" then
+		local uiMapID = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player");
+		local artID = uiMapID and C_Map.GetMapArtID and C_Map.GetMapArtID(uiMapID);
+		local info = uiMapID and C_Map.GetMapInfo and C_Map.GetMapInfo(uiMapID);
+		local overlays = (_G.AchievementsForeverData and _G.AchievementsForeverData.worldMapOverlays) or {};
+		local rowsForArt = 0;
+		for _, overlay in pairs(overlays) do
+			if overlay.uiMapArtID == artID then
+				rowsForArt = rowsForArt + 1;
+			end
+		end
+		local ok, explored = pcall(function() return C_MapExplorationInfo.GetExploredMapTextures(uiMapID); end);
+		explored = (ok and explored) or {};
+		local resolvers = Achievements.criteriaResolvers or {};
+		print(prefix .. "map " .. tostring(uiMapID) .. " (" .. tostring(info and info.name) .. "), art " .. tostring(artID)
+			.. ", overlay rows in our data for this art: " .. rowsForArt
+			.. ", explored textures from client: " .. tostring(#explored)
+			.. ", geometry fallback used: " .. tostring(resolvers.exploredOverlayGeometryFallbackUsed == true));
+		for i = 1, math.min(#explored, 4) do
+			local t = explored[i];
+			local r = t.hitRect or {};
+			local matched = "no row matches";
+			for _, overlay in pairs(overlays) do
+				if t.textureWidth == overlay.textureWidth and t.textureHeight == overlay.textureHeight and t.offsetX == overlay.offsetX and t.offsetY == overlay.offsetY
+					and r.top == overlay.hitRectTop and r.bottom == overlay.hitRectBottom and r.left == overlay.hitRectLeft and r.right == overlay.hitRectRight then
+					matched = "matches overlay " .. tostring(overlay.id) .. " (art " .. tostring(overlay.uiMapArtID) .. ")";
+					break;
+				end
+			end
+			print(prefix .. "  texture " .. i .. ": " .. tostring(t.textureWidth) .. "x" .. tostring(t.textureHeight) .. " at " .. tostring(t.offsetX) .. "," .. tostring(t.offsetY)
+				.. " hit " .. tostring(r.top) .. "/" .. tostring(r.bottom) .. "/" .. tostring(r.left) .. "/" .. tostring(r.right) .. " -> " .. matched);
+		end
 	else
 		Achievements.ToggleAchievementFrame(false);
 	end

@@ -993,11 +993,27 @@ end
 -- bits to true. Returns true when at least one new overlay was discovered.
 -- Attached to Resolvers (instead of a chunk-level local) to stay under Lua
 -- 5.1's 200 active local/upvalue limit in this large file.
+-- AchievementsForever: the Forever client may assign different map-art IDs
+-- than the 3.4.5 data this addon ships, so when no overlay rows exist for the
+-- reported art ID, fall back to matching the explored texture geometry against
+-- every overlay row. All eight geometry values have to agree, so false
+-- positives are unlikely.
+function Resolvers.GetAllWorldMapOverlayList()
+	if not Resolvers.allWorldMapOverlayList then
+		Resolvers.allWorldMapOverlayList = {};
+		for _, overlay in pairs(worldMapOverlays) do
+			tinsert(Resolvers.allWorldMapOverlayList, overlay);
+		end
+	end
+	return Resolvers.allWorldMapOverlayList;
+end
+
 function Resolvers.MergeExploredOverlaysForMap(exploredOverlays, uiMapID, overlaysByArtID)
 	local uiMapArtID = C_Map.GetMapArtID(uiMapID);
 	local overlays = uiMapArtID and overlaysByArtID[uiMapArtID] or nil;
 	if not overlays then
-		return false;
+		overlays = Resolvers.GetAllWorldMapOverlayList();
+		Resolvers.exploredOverlayGeometryFallbackUsed = true;
 	end
 
 	local exploredTextures = C_MapExplorationInfo.GetExploredMapTextures(uiMapID);
@@ -7621,7 +7637,12 @@ local function HookEmoteCriteria()
 	end
 
 	emoteHooksInstalled = true;
-	Resolvers.HookGlobalFunction("DoEmote", function(emoteToken, emoteTarget)
+	-- AchievementsForever: record whether and when the hook fires so the
+	-- CHAT_MSG_TEXT_EMOTE fallback in the overrides file can stay out of its way.
+	Resolvers.emoteHookInstalled = Resolvers.HookGlobalFunction("DoEmote", function(emoteToken, emoteTarget)
+		Resolvers.lastEmoteHookAt = GetTime();
+		Resolvers.emoteHookCount = (Resolvers.emoteHookCount or 0) + 1;
+		Resolvers.lastEmoteHookToken = emoteToken;
 		RecordEmoteCriteria(emoteToken, emoteTarget);
 	end);
 	return true;

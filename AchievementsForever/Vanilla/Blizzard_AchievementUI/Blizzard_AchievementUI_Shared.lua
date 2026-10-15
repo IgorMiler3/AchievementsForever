@@ -1102,28 +1102,28 @@ function AchievementFrame_IsComparison()
 end
 
 ACHIEVEMENT_FUNCTIONS = {
-	categoryAccessor = GetCategoryList,
+	categoryAccessor = AchievementsForever.GetCategoryList,
 	clearFunc = AchievementsFrameAchievements_ClearSelection,
 	updateFunc = AchievementsFrameAchievements_Update,
 	selectedCategory = "summary";
 }
 
 STAT_FUNCTIONS = {
-	categoryAccessor = GetStatisticsCategoryList,
+	categoryAccessor = AchievementsForever.GetStatisticsCategoryList,
 	clearFunc = nil,
 	updateFunc = AchievementsFrameStats_Update,
 	selectedCategory = "summary";
 }
 
 COMPARISON_ACHIEVEMENT_FUNCTIONS = {
-	categoryAccessor = GetCategoryList,
+	categoryAccessor = AchievementsForever.GetCategoryList,
 	clearFunc = AchievementsFrameComparison_ClearSelection,
 	updateFunc = AchievementsFrameComparison_Update,
 	selectedCategory = -1,
 }
 
 COMPARISON_STAT_FUNCTIONS = {
-	categoryAccessor = GetStatisticsCategoryList,
+	categoryAccessor = AchievementsForever.GetStatisticsCategoryList,
 	clearFunc = AchievementsFrameComparison_ClearSelection,
 	updateFunc = AchievementsFrameComparison_UpdateStats,
 	selectedCategory = -2,

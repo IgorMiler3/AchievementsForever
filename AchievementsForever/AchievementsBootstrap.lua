@@ -54,7 +54,7 @@ pcall(eventFrame.RegisterEvent, eventFrame, "CHAT_MSG_MONEY");
 pcall(eventFrame.RegisterEvent, eventFrame, "PLAYER_EQUIPMENT_CHANGED");
 pcall(eventFrame.RegisterEvent, eventFrame, "PLAYERBANKSLOTS_CHANGED");
 pcall(eventFrame.RegisterEvent, eventFrame, "PLAYER_MONEY");
-pcall(eventFrame.RegisterEvent, eventFrame, "COMBAT_LOG_EVENT_UNFILTERED");
+-- COMBAT_LOG_EVENT_UNFILTERED is a protected registration in Forever (ADDON_ACTION_FORBIDDEN) and never fires; UNIT_DIED replaces it.
 pcall(eventFrame.RegisterEvent, eventFrame, "UNIT_DIED"); -- AchievementsForever port applied
 pcall(eventFrame.RegisterEvent, eventFrame, "PLAYER_DEAD");
 pcall(eventFrame.RegisterEvent, eventFrame, "PLAYER_PVP_RANK_CHANGED");

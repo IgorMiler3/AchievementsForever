@@ -78,6 +78,10 @@ for (const file of files) {
       if (localNames.has(name)) continue;
       const re = new RegExp(`(^|[^\\w.:])${name}\\(`, 'gm');
       text = text.replace(re, (m, pre) => { apiHits++; return `${pre}AchievementsForever.${name}(`; });
+      // bare references stored as values (`categoryAccessor = GetCategoryList,`)
+      // would otherwise keep pointing at the client's native function
+      const bareRe = new RegExp(`(^|[^\\w.:"])${name}(?=\\s*[,;\\)\\]}]|\\s*$)`, 'gm');
+      text = text.replace(bareRe, (m, pre) => { apiHits++; return `${pre}AchievementsForever.${name}`; });
     }
   }
 
@@ -180,7 +184,7 @@ if (!bootstrap.includes(PORT_MARK)) {
   bootstrap = bootstrap.replace(/^\teventFrame:RegisterEvent\("(\w+)"\);/gm, '\tpcall(eventFrame.RegisterEvent, eventFrame, "$1");');
   bootstrap = bootstrap.replace(
     'pcall(eventFrame.RegisterEvent, eventFrame, "COMBAT_LOG_EVENT_UNFILTERED");',
-    'pcall(eventFrame.RegisterEvent, eventFrame, "COMBAT_LOG_EVENT_UNFILTERED");\npcall(eventFrame.RegisterEvent, eventFrame, "UNIT_DIED"); ' + PORT_MARK
+    '-- COMBAT_LOG_EVENT_UNFILTERED is a protected registration in Forever (ADDON_ACTION_FORBIDDEN) and never fires; UNIT_DIED replaces it.\npcall(eventFrame.RegisterEvent, eventFrame, "UNIT_DIED"); ' + PORT_MARK
   );
   bootstrap = bootstrap.replace(
     '\tif event == "COMBAT_LOG_EVENT_UNFILTERED" then',
